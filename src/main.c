@@ -1,3 +1,5 @@
+// Right now the main function is pretty much used only for testing if things work
+
 #include <stdio.h>
 #include <token.h>
 #include <lexer.h>
