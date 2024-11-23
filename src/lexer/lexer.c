@@ -153,3 +153,31 @@ char **lexstream(char *charstream)
     return lexstream;
 }
 
+// Function for tokenizing the lexes
+Token *tokenize(char **lexstream)
+{
+    int count = 0;
+    while (lexstream[count] != NULL)
+    {
+        count++;
+    }
+
+    Token *tokenstream = malloc((count + 1) * sizeof(Token));
+    if (tokenstream == NULL)
+    {
+        perror("Failed to allocate memory for tokenstream\n");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < count; i++)
+    {
+        tokenstream[i].value = strdup(lexstream[i]);
+        if (tokenstream[i].value == NULL)
+        {
+            perror("Failed to allocate memory for tokenstream\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    return tokenstream;
+}
