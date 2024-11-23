@@ -177,7 +177,30 @@ Token *tokenize(char **lexstream)
             perror("Failed to allocate memory for tokenstream\n");
             exit(EXIT_FAILURE);
         }
+
+        if (strcmp(tokenstream[i].value, "lex1") == 0)
+        {
+            tokenstream[i].type = TOKEN_TYPE1;
+        }
+
+        else if (strcmp(tokenstream[i].value, "lex2") == 0)
+        {
+            tokenstream[i].type = TOKEN_TYPE2;
+        }
+
+        else if (strcmp(tokenstream[i].value, "lex3") == 0)
+        {
+            tokenstream[i].type = TOKEN_TYPE3;
+        }
+
+        else
+        {
+            tokenstream[i].type = UNINDENTIFIED;
+        }
     }
+
+    tokenstream[count + 1].value = NULL;
+    tokenstream[count + 1].type = 3;
 
     return tokenstream;
 }

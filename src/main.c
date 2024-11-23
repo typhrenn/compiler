@@ -8,6 +8,12 @@ int main()
     char *text = charstream(file);
 
     char **lex = lexstream(text);
+    Token *tokens = tokenize(lex);
+    for (int i = 0; tokens[i].value != NULL; i++)
+    {
+        printf("Value: %s\n", tokens[i].value);
+        printf("Type: %d\n", tokens[i].type);
+    }
 
     return 0;
 }
