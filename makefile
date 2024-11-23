@@ -1,7 +1,7 @@
 .PHONY: clean
 
-compiler: $(wildcard src/*.c)
-	g++ -Iinclude -o $@ $^
+compiler: $(shell find src -type f -iname '*.c')
+	gcc -Iinclude -o $@ $^
 	
 clean:
 	rm compiler

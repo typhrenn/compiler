@@ -42,7 +42,73 @@ char *charstream(const char *filename)
 }
 
 // Return tokens from char pointer
-Token tokenstream(char *charstream)
+char **lexstream(char *charstream)
 {
+    int word_count = 0;
+    int in_word = 0;
 
+    for (int i = 0; charstream[i] != '\0'; i++)
+    {
+        if (charstream[i] == ' ' || charstream[i] == '\t'|| charstream[i] == '\n')
+        {
+            if (in_word)
+            {
+                in_word = 0;
+            }
+        }
+
+        else
+        {
+            if (!in_word)
+            {
+                word_count++;
+                in_word = 1;
+            }
+        }
+    }
+
+    char **lexstream = malloc((word_count + 1) * sizeof(char *));
+
+    int word_index = 0;
+    int start = -1;
+
+    for (int i = 0; ; i++)
+    {
+        if (charstream[i] == ' ' || charstream[i] == '\t'|| charstream[i] == '\n')
+        {
+            if (start != -1)
+            {
+                int word_len = i - start;
+
+                lexstream[word_index] = malloc((word_len + 1) * sizeof(char));
+
+                for (int j = 0; j < word_len; j++)
+                {
+                    lexstream[word_index][j] = charstream[start + j];
+                }
+
+                lexstream[word_index][word_len] = '\0';
+
+                word_index++;
+                start = -1;
+            }
+
+            if (charstream[i] == '\0')
+            {
+                break;
+            }
+        }
+
+        else
+        {
+            if (start == 1)
+            {
+                start = i;
+            }
+        }
+    }
+
+    lexstream[word_count] = NULL;
+
+    return lexstream;
 }
