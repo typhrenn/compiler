@@ -1,0 +1,2 @@
+This is a sample file!
+This is it's second line, below will be an empty one

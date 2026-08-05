@@ -12,3 +12,6 @@ $(OUT): $(SRC)
 
 clean:
 	rm -f $(OUT)
+
+run:
+	./${OUT}
