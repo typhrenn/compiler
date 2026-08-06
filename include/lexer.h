@@ -1,10 +1,24 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include <stdbool.h>
+
 #include "file.h"
 
-typedef char* Token;
+typedef enum {
+    FIRST,
+    SECOND,
+    IDENTIFIER,
+    SYMBOL
+} TokenType;
 
-void tokenize(Token *tokens, struct FileData *fileStruct);
+typedef struct {
+    const char  *value;
+    uint32_t    length;
+    TokenType   type;
+} Token;
+
+bool check_format(char c);
+void tokenize(struct FileData *fileStruct);
 
 #endif

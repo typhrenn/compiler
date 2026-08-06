@@ -15,11 +15,13 @@ void f_size(struct FileData *fileStructure) {
 }
 
 void f_data(struct FileData *fileStructure, ThrowError throw) {
-    fileStructure->data = malloc(sizeof(char) * fileStructure->length);
+    fileStructure->data = malloc(sizeof(char) * fileStructure->length + 1);
     if (fileStructure->data == NULL) {
         throw("unable to allocate memory for data");
     }
     fread(fileStructure->data, 1, fileStructure->length, fileStructure->file);
+
+    fileStructure->data[fileStructure->length] = '\0';
 }
 
 void f_verify(struct FileData *fileStruct, ThrowError throw) {
@@ -38,9 +40,14 @@ void f_fill(struct FileData *fileStruct, ThrowError throw) {
     f_data(fileStruct, exit_fatal);
 }
 
-void f_out(struct FileData fileStruct) {
-    for (int i = 0; i < fileStruct.length; i++) {
-        printf("%c", fileStruct.data[i]);
+void f_out(struct FileData *fileStruct) {
+    for (int i = 0; i < fileStruct->length; i++) {
+        printf("%c", fileStruct->data[i]);
     }
     printf("\n");
+}
+
+void f_free(struct FileData *fileStruct) {
+    free(fileStruct->data);
+    fclose(fileStruct->file);
 }

@@ -1,5 +1,6 @@
 #include "file.h"
 #include "error_handle.h"
+#include "lexer.h"
 
 int main() {
     struct FileData fileStruct = {
@@ -12,5 +13,9 @@ int main() {
 
     printf("This is the size of test file: %ld\n", fileStruct.length);
 
-    f_out(fileStruct);
+    f_out(&fileStruct);
+
+    tokenize(&fileStruct);
+
+    f_free(&fileStruct);
 }

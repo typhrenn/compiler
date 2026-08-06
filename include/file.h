@@ -18,6 +18,7 @@ void f_size(struct FileData *fileStructure);
 void f_data(struct FileData *fileStructure, ThrowError throw);
 void f_verify(struct FileData *fileStruct, ThrowError throw);
 void f_fill(struct FileData *fileStruct, ThrowError throw);
-void f_out(struct FileData fileStruct);
+void f_out(struct FileData *fileStruct);
+void f_free(struct FileData *fileStructure);
 
 #endif
