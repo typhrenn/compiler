@@ -37,7 +37,7 @@ void f_fill(struct FileData *fileStruct, ThrowError throw) {
     fileStruct->file = fopen(fileStruct->filename, "rb");
     f_verify(fileStruct, throw);
     f_size(fileStruct);
-    f_data(fileStruct, exit_fatal);
+    f_data(fileStruct, log_error);
 }
 
 void f_out(struct FileData *fileStruct) {
