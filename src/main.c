@@ -9,13 +9,13 @@ int main() {
         .length = 0,
         .data = NULL
     };
-    f_fill(&fileStruct, log_error);
+    f_fill(&fileStruct, error);
 
     printf("This is the size of test file: %ld\n", fileStruct.length);
 
     f_out(&fileStruct);
 
-    tokenize(&fileStruct, log_error);
+    tokenize(&fileStruct, verror);
 
     f_free(&fileStruct);
 }

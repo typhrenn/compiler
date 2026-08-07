@@ -14,7 +14,7 @@ void f_size(struct FileData *fileStructure) {
     fseek(fileStructure->file, 0, SEEK_SET);
 }
 
-void f_data(struct FileData *fileStructure, ThrowError throw) {
+void f_data(struct FileData *fileStructure, Error throw) {
     fileStructure->data = malloc(sizeof(char) * fileStructure->length + 1);
     if (fileStructure->data == NULL) {
         throw("unable to allocate memory for data");
@@ -24,7 +24,7 @@ void f_data(struct FileData *fileStructure, ThrowError throw) {
     fileStructure->data[fileStructure->length] = '\0';
 }
 
-void f_verify(struct FileData *fileStruct, ThrowError throw) {
+void f_verify(struct FileData *fileStruct, Error throw) {
     if (fileStruct->filename == NULL) {
         throw("filename is NULL");
     } 
@@ -33,11 +33,11 @@ void f_verify(struct FileData *fileStruct, ThrowError throw) {
     }
 }
 
-void f_fill(struct FileData *fileStruct, ThrowError throw) {
+void f_fill(struct FileData *fileStruct, Error throw) {
     fileStruct->file = fopen(fileStruct->filename, "rb");
     f_verify(fileStruct, throw);
     f_size(fileStruct);
-    f_data(fileStruct, log_error);
+    f_data(fileStruct, error);
 }
 
 void f_out(struct FileData *fileStruct) {

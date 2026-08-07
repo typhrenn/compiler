@@ -19,6 +19,6 @@ typedef struct {
 } Token;
 
 bool check_format(char c);
-void tokenize(struct FileData *fileStruct, ThrowError throw);
+void tokenize(struct FileData *fileStruct, VerboseError throw);
 
 #endif

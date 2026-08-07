@@ -1,24 +1,28 @@
 #include "lexer.h"
 #include <string.h>
 #include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 bool check_format(char c) {
-    return isalnum(c) || c == '_' || c == '-';
+    return isalnum((unsigned char)c) || c == '_' || c == '-';
 }
 
-void tokenize(struct FileData *fileStruct, ThrowError throw) {
+void tokenize(struct FileData *fileStruct, VerboseError throw) {
     const char *pos = fileStruct->data;
+    const char *line_start = fileStruct->data;
     int counter = 1;
-    int line = 1;
+    int lineCount = 1;
 
     while (*pos != '\0') {
-        const char *linec = pos;
-
         if (*pos == '\n') {
             pos++;
-            line++;
+            lineCount++;
+            line_start = pos;
             continue;
-        } else if (isspace(*pos)) {
+        } 
+
+        if (isspace((unsigned char)*pos)) {
             pos++;
             continue;
         }
@@ -26,7 +30,9 @@ void tokenize(struct FileData *fileStruct, ThrowError throw) {
         Token token;
         token.value = pos;
 
-        if (isalpha(*pos)) {
+        int column = (int)(token.value - line_start) + 1;
+
+        if (isalpha((unsigned char)*pos)) {
             const char *start = pos;
 
             while (check_format(*pos)) {
@@ -34,7 +40,19 @@ void tokenize(struct FileData *fileStruct, ThrowError throw) {
             }
 
             if (pos > start) {
-                if (!isalnum((unsigned char)*(pos - 1))) throw("Incorrect identifier format, an identifier must end with either a letter or a number: \n At line %d: \"%.*s\"", line, (int)(pos - token.value - 1), token.value);
+                if (!isalnum((unsigned char)*(pos - 1))) {
+                    const char *line_end = line_start;
+                    while (*line_end != '\n' && *line_end != '\0') {
+                        line_end++;
+                    }
+                    int line_len = (int)(line_end - line_start);
+
+                    throw(
+                        (Location){fileStruct->filename, lineCount, column},
+                        strcnstr(line_start, line_len),
+                        "Identifier must end with a letter or number: '%.*s'", (int)(pos - token.value), token.value
+                    );
+                }
             }
 
             token.length = pos - token.value;
@@ -45,7 +63,8 @@ void tokenize(struct FileData *fileStruct, ThrowError throw) {
             token.type = SYMBOL;
         }
 
-        printf("Token %d: %.*s\n", counter, (int)token.length, token.value);
+        printf("Token %d (Line %d, Col %d): %.*s\n", 
+               counter, lineCount, column, (int)token.length, token.value);
         counter++;
     }
 }

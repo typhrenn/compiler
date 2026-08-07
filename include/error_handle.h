@@ -6,15 +6,20 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-typedef void (*ThrowError)(const char *fmt, ...);
+#include "utils.h"
 
 typedef struct {
     const char *file;
     int line;
-    int ch;
+    int column;
 } Location;
 
-__attribute__((noreturn)) __attribute__((format(printf, 1, 2))) void log_error(const char *fmt, ...);
+typedef void (*Error)(const char *fmt, ...);
+typedef void (*VerboseError)(Location loc, String source_line, const char *fmt, ...);
+
+__attribute__((noreturn)) __attribute__((format(printf, 1, 2))) void error(const char *fmt, ...);
+void verror(Location loc, String source_line, const char *fmt, ...);
+
 __attribute__((format(printf, 1, 2))) void log_warning(const char *fmt, ...);
 __attribute__((format(printf, 1, 2))) void log_note(const char *fmt, ...);
 
