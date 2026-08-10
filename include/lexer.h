@@ -2,12 +2,14 @@
 #define LEXER_H
 
 #include <stdbool.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "file.h"
 
 typedef enum {
-    FIRST,
-    SECOND,
     IDENTIFIER,
     SYMBOL
 } TokenType;
@@ -19,6 +21,6 @@ typedef struct {
 } Token;
 
 bool check_format(char c);
-void tokenize(struct FileData *fileStruct, VerboseError throw);
+void tokenize(struct FileData *fileStruct, VerboseError throw, Fatal fatal);
 
 #endif

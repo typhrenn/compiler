@@ -8,7 +8,10 @@ struct FileData {
     char *data;
 };
 
-void f_size(struct FileData *fileStructure) {
+void f_size(struct FileData *fileStructure, Error throw) {
+    if (fileStructure->file == NULL) {
+        throw("File is null, unable to get size\n");
+    }
     fseek(fileStructure->file, 0, SEEK_END);
     fileStructure->length = ftell(fileStructure->file);
     fseek(fileStructure->file, 0, SEEK_SET);
@@ -24,6 +27,16 @@ void f_data(struct FileData *fileStructure, Error throw) {
     fileStructure->data[fileStructure->length] = '\0';
 }
 
+void f_open(struct FileData *fileStruct, Error throw) {
+    if (fileStruct->filename == NULL) {
+        throw("No filename provided\n");
+    }
+    fileStruct->file = fopen(fileStruct->filename, "rb");
+    if (fileStruct->file == NULL) {
+        throw("Unable to open the file\n");
+    }
+}
+
 void f_verify(struct FileData *fileStruct, Error throw) {
     if (fileStruct->filename == NULL) {
         throw("filename is NULL");
@@ -34,10 +47,10 @@ void f_verify(struct FileData *fileStruct, Error throw) {
 }
 
 void f_fill(struct FileData *fileStruct, Error throw) {
-    fileStruct->file = fopen(fileStruct->filename, "rb");
+    f_open(fileStruct, throw);
     f_verify(fileStruct, throw);
-    f_size(fileStruct);
-    f_data(fileStruct, error);
+    f_size(fileStruct, throw);
+    f_data(fileStruct, throw);
 }
 
 void f_out(struct FileData *fileStruct) {

@@ -14,8 +14,9 @@ struct FileData {
     char *data;
 };
 
-void f_size(struct FileData *fileStructure);
+void f_size(struct FileData *fileStructure, Error throw);
 void f_data(struct FileData *fileStructure, Error throw);
+void f_open(struct FileData *fileStructure, Error throw);
 void f_verify(struct FileData *fileStruct, Error throw);
 void f_fill(struct FileData *fileStruct, Error throw);
 void f_out(struct FileData *fileStruct);

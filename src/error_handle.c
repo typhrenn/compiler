@@ -6,7 +6,7 @@
 #define COLOR_CYAN    "\x1b[36m"
 #define COLOR_BOLD    "\x1b[1m"
 
-void verror(Location loc, String source_line, const char *fmt, ...) {
+void verror(Location loc, String source_line, uint32_t length, const char *fmt, ...) {
     fprintf(stderr, COLOR_BOLD "%s:%d:%d: " COLOR_RED "error: " COLOR_RESET COLOR_BOLD,
             loc.file ? loc.file : "<stdin>", loc.line, loc.column);
 
@@ -20,7 +20,7 @@ void verror(Location loc, String source_line, const char *fmt, ...) {
         fprintf(stderr, " %5d | %.*s\n", loc.line, source_line.len, source_line.string);
 
         fprintf(stderr, "       | ");
-        for (int i = 1; i < loc.column && i <= source_line.len; i++) {
+        for (int i = 1; i < loc.column + length && i <= source_line.len; i++) {
             fputc(source_line.string[i - 1] == '\t' ? '\t' : ' ', stderr);
         }
 
@@ -30,7 +30,7 @@ void verror(Location loc, String source_line, const char *fmt, ...) {
 
 __attribute__((noreturn)) __attribute__((format(printf, 1, 2))) void error(const char *fmt, ...) {
     fprintf(stderr, COLOR_BOLD COLOR_RED "fatal error: " COLOR_RESET COLOR_BOLD);
-
+    
     va_list args;
     va_start(args, fmt);
     vfprintf(stderr, fmt, args);
