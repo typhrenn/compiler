@@ -1,0 +1,84 @@
+#include <stdio.sf>
+
+typedef struct {
+    uint32 x;
+    int32 y;
+} Vector2;
+
+typedef struct {
+    Vector2 pos;
+    bool active;
+} Player;
+
+ 
+func (p *Player) move(dx int32, dy int32) {
+    p->pos.x = p->pos.x + (uint32)dx;
+    p->pos.y = p->pos.y + dy;
+}
+
+func (p *Player) isAlive() bool {
+    return p->active && (p->pos.y >= 0);
+}
+
+func (v Vector2) magnitudeSquared() uint32 {
+    return (v.x * v.x) + (uint32)(v.y * v.y);
+}
+
+func calculate_mask(flags uint32, mask uint32) uint32 {
+    uint32 inverted = ~mask;          // Bitwise NOT prefix
+    uint32 combined = flags & mask;   // Bitwise AND
+    return combined | (flags ^ inverted); // Bitwise OR, XOR
+}
+
+func evaluate_condition(a int32, b int32) bool {
+    if (a != b && !(a <= 0)) {
+        return (a > b) || (b == 100);
+    }
+    return false;
+}
+
+func main() {
+    Player hero = {
+        { 10, 20 },
+        true
+    };
+
+    Player *heroPtr = &hero;
+
+    heroPtr->move(5, -10);
+    uint32 mag = hero.pos.magnitudeSquared();
+
+    int32 score = 0;
+    score += 100;
+    score -= 10;
+    score *= 2;
+    score /= 4;
+    score %= 7;
+
+    score++;
+    score--;
+
+    uint32 bits = 1 << 4;
+    bits >>= 2;
+
+    int32 counter = 0;
+    while (counter < 5) {
+        if (counter == 2) {
+            counter++;
+            continue;
+        }
+
+        if (heroPtr->isAlive()) {
+            printf("Player alive at score: %d\n", score);
+        } else {
+            break;
+        }
+
+        counter++;
+    }
+
+    int32 neg = -score;
+    uint32 maskResult = calculate_mask(bits, 0x0F);
+
+    return 0;
+}

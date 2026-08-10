@@ -1,13 +1,5 @@
 #include "file.h"
 
-struct FileData {
-    char *filename;
-    FILE *file;
-    
-    long length;
-    char *data;
-};
-
 void f_size(struct FileData *fileStructure, Error throw) {
     if (fileStructure->file == NULL) {
         throw("File is null, unable to get size\n");
@@ -37,18 +29,8 @@ void f_open(struct FileData *fileStruct, Error throw) {
     }
 }
 
-void f_verify(struct FileData *fileStruct, Error throw) {
-    if (fileStruct->filename == NULL) {
-        throw("filename is NULL");
-    } 
-    if (fileStruct->file == NULL) {
-        throw("failed to open file");
-    }
-}
-
 void f_fill(struct FileData *fileStruct, Error throw) {
     f_open(fileStruct, throw);
-    f_verify(fileStruct, throw);
     f_size(fileStruct, throw);
     f_data(fileStruct, throw);
 }
