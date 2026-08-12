@@ -20,7 +20,7 @@ func (p *Player) isAlive() bool {
     return p->active && (p->pos.y >= 0);
 }
 
-func (v Vector2) magnitudeSquared() uint32 {
+func (v Vector2) magnitude() uint32 {
     return (v.x * v.x) + (uint32)(v.y * v.y);
 }
 
@@ -46,7 +46,7 @@ func main() {
     Player *heroPtr = &hero;
 
     heroPtr->move(5, -10);
-    uint32 mag = hero.pos.magnitudeSquared();
+    uint32 mag = hero.pos.magnitude();
 
     int32 score = 0;
     score += 100;
