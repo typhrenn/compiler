@@ -139,6 +139,10 @@ void tokenize(struct FileData *fileStruct, VerboseError throw, Fatal fatal) {
                     if (*pos == '=') {
                         pos++;
                         token.type = TOKEN_SLASH_EQUAL; // Assignment by quotient
+                    } else if (*pos == '/') {
+                        while (*pos != '\n' && *pos != '\0') {
+                            pos++;
+                        }
                     } else {
                         token.type = TOKEN_SLASH; // division
                     }
@@ -239,7 +243,7 @@ void tokenize(struct FileData *fileStruct, VerboseError throw, Fatal fatal) {
                     int line_len = (int)(line_end - line_start);
                     pos++; 
 
-                    char *start = pos;
+                    const char *start __attribute__((unused)) = pos;
 
                     while (*pos != '"' && *pos != '\0') {
                         if (*pos == '\\' && *(pos + 1) != '\0') {
@@ -286,7 +290,7 @@ void tokenize(struct FileData *fileStruct, VerboseError throw, Fatal fatal) {
         token.length = (int)(pos - token.value);
 
         #ifdef DEBUG
-        printf("Token %d (Line %d, Col %d): %.*s\n", 
+        printf("Token %d (Line %d, Col %d):\t%.*s\n", 
                counter, lineCount, column, (int)token.length, token.value
 		);
         counter++;
