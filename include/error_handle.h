@@ -25,4 +25,6 @@ void verror(Location loc, String source_line, uint32_t length, const char *fmt, 
 __attribute__((format(printf, 1, 2))) void log_warning(const char *fmt, ...);
 __attribute__((format(printf, 1, 2))) void log_note(const char *fmt, ...);
 
+void dummy_exit(int __status);
+
 #endif

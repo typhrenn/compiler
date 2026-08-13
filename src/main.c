@@ -15,12 +15,18 @@ int main(int argc, char **argv) {
     };
     f_fill(&fileStruct, error);
 
-    #ifdef DEBUG_DATA
+    #ifdef DEBUG
     printf("This is the size of test file: %ld\n", fileStruct.length);
     f_out(&fileStruct);
     #endif
 
+    #ifdef BENCHMARK
+    for (int i = 0; i < 1000000; i++) {
+        tokenize(&fileStruct, verror, dummy_exit);
+    }
+    #else
     tokenize(&fileStruct, verror, exit);
+    #endif
 
     f_free(&fileStruct);
 }

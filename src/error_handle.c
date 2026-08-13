@@ -58,3 +58,6 @@ __attribute__((format(printf, 1, 2))) void log_note(const char *fmt, ...) {
     fprintf(stderr, "\n");
 }
 
+void dummy_exit(int __status) {
+    
+}

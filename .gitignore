@@ -2,3 +2,5 @@ compiler
 test
 log
 syntax
+perf.data
+perf.data.old

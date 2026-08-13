@@ -2,11 +2,60 @@
 #include "debug.h"
 
 TokenType lookup_keyword(const char *text, size_t length) {
-    for (size_t i = 0; i < KEYWORD_COUNT; i++) {
-        if (keywords[i].length == length) {
-            if (memcmp(keywords[i].name, text, length) == 0) {
-                return keywords[i].type;
+    switch (text[0]) {
+        case 'b': {
+            if (length == 4 && memcmp(text, "bool", 4) == 0) return TOKEN_BOOL;
+            if (length == 5 && memcmp(text, "break", 5) == 0) return TOKEN_BREAK;
+        }
+        case 'c': {
+            if (length == 4 && memcmp(text, "char", 4) == 0) return TOKEN_CHAR;
+            if (length == 5 && memcmp(text, "const", 5) == 0) return TOKEN_CONST;
+            if (length == 8 && memcmp(text, "continue", 8) == 0) return TOKEN_CONTINUE;
+        }
+        case 'e': {
+            if (length == 4 && memcmp(text, "else", 4) == 0) return TOKEN_ELSE;
+        }
+        case 'f': {
+            if (length == 5 && memcmp(text, "false", 5) == 0) return TOKEN_FALSE;
+            if (length == 7) {
+                if (memcmp(text, "float32", 7) == 0) return TOKEN_FLOAT32;
+                if (memcmp(text, "float64", 7) == 0) return TOKEN_FLOAT64;
             }
+            if (length == 3 && memcmp(text, "for", 3) == 0) return TOKEN_FOR;
+            if (length == 4 && memcmp(text, "func", 4) == 0) return TOKEN_FUNC;
+        }
+        case 'i': {
+            if (length == 2 && text[1] == 'f') return TOKEN_IF;
+            if (length == 4 && memcmp(text, "int8", 4) == 0) return TOKEN_INT8;
+            if (length == 5) {
+                if (memcmp(text, "int16", 5) == 0) return TOKEN_INT16;
+                if (memcmp(text, "int32", 5) == 0) return TOKEN_INT32;
+                if (memcmp(text, "int64", 5) == 0) return TOKEN_INT64;
+            }
+        }
+        case 'r': {
+            if (length == 6 && memcmp(text, "return", 6) == 0) return TOKEN_RETURN;
+        }
+        case 's': {
+            if (length == 6 && memcmp(text, "struct", 6) == 0) return TOKEN_STRUCT;
+        }
+        case 't': {
+            if (length == 4 && memcmp(text, "true", 4) == 0) return TOKEN_TRUE;
+            if (length == 7 && memcmp(text, "typedef", 7) == 0) return TOKEN_TYPEDEF;
+        }
+        case 'u': {
+            if (length == 5 && memcmp(text, "uint8", 5) == 0) return TOKEN_UINT8;
+            if (length == 6) {
+                if (memcmp(text, "uint16", 6) == 0) return TOKEN_UINT16;
+                if (memcmp(text, "uint32", 6) == 0) return TOKEN_UINT32;
+                if (memcmp(text, "uint64", 6) == 0) return TOKEN_UINT64;
+            }
+        }
+        case 'v': {
+            if (length == 4 && memcmp(text, "void", 4) == 0) return TOKEN_VOID;
+        }
+        case 'w': {
+            if (length == 5 && memcmp(text, "while", 5) == 0) return TOKEN_WHILE;
         }
     }
     
