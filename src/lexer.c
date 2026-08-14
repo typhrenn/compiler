@@ -6,14 +6,17 @@ TokenType lookup_keyword(const char *text, size_t length) {
         case 'b': {
             if (length == 4 && memcmp(text, "bool", 4) == 0) return TOKEN_BOOL;
             if (length == 5 && memcmp(text, "break", 5) == 0) return TOKEN_BREAK;
+			break;
         }
         case 'c': {
             if (length == 4 && memcmp(text, "char", 4) == 0) return TOKEN_CHAR;
             if (length == 5 && memcmp(text, "const", 5) == 0) return TOKEN_CONST;
             if (length == 8 && memcmp(text, "continue", 8) == 0) return TOKEN_CONTINUE;
+			break;
         }
         case 'e': {
             if (length == 4 && memcmp(text, "else", 4) == 0) return TOKEN_ELSE;
+			break;
         }
         case 'f': {
             if (length == 5 && memcmp(text, "false", 5) == 0) return TOKEN_FALSE;
@@ -23,6 +26,7 @@ TokenType lookup_keyword(const char *text, size_t length) {
             }
             if (length == 3 && memcmp(text, "for", 3) == 0) return TOKEN_FOR;
             if (length == 4 && memcmp(text, "func", 4) == 0) return TOKEN_FUNC;
+			break;
         }
         case 'i': {
             if (length == 2 && text[1] == 'f') return TOKEN_IF;
@@ -32,16 +36,20 @@ TokenType lookup_keyword(const char *text, size_t length) {
                 if (memcmp(text, "int32", 5) == 0) return TOKEN_INT32;
                 if (memcmp(text, "int64", 5) == 0) return TOKEN_INT64;
             }
+			break;
         }
         case 'r': {
             if (length == 6 && memcmp(text, "return", 6) == 0) return TOKEN_RETURN;
+			break;
         }
         case 's': {
             if (length == 6 && memcmp(text, "struct", 6) == 0) return TOKEN_STRUCT;
+			break;
         }
         case 't': {
             if (length == 4 && memcmp(text, "true", 4) == 0) return TOKEN_TRUE;
             if (length == 7 && memcmp(text, "typedef", 7) == 0) return TOKEN_TYPEDEF;
+			break;
         }
         case 'u': {
             if (length == 5 && memcmp(text, "uint8", 5) == 0) return TOKEN_UINT8;
@@ -50,12 +58,15 @@ TokenType lookup_keyword(const char *text, size_t length) {
                 if (memcmp(text, "uint32", 6) == 0) return TOKEN_UINT32;
                 if (memcmp(text, "uint64", 6) == 0) return TOKEN_UINT64;
             }
+			break;
         }
         case 'v': {
             if (length == 4 && memcmp(text, "void", 4) == 0) return TOKEN_VOID;
+			break;
         }
         case 'w': {
             if (length == 5 && memcmp(text, "while", 5) == 0) return TOKEN_WHILE;
+			break;
         }
     }
     
@@ -192,6 +203,7 @@ void tokenize(struct FileData *fileStruct, VerboseError throw, Fatal fatal) {
                         while (*pos != '\n' && *pos != '\0') {
                             pos++;
                         }
+						continue;
                     } else {
                         token.type = TOKEN_SLASH; // division
                     }
