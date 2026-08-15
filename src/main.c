@@ -1,7 +1,7 @@
-#include "file.h"
-#include "error_handle.h"
-#include "lexer.h"
-#include "debug.h"
+#include "utils/file.h"
+#include "error/error_handle.h"
+#include "lexer/lexer.h"
+#include "utils/debug.h"
 
 int main(int argc, char **argv) {
     if (argc < 2) {
@@ -22,10 +22,10 @@ int main(int argc, char **argv) {
 
     #ifdef BENCHMARK
     for (int i = 0; i < 1000000; i++) {
-        tokenize(&fileStruct, verror, dummy_exit);
+        lexer(&fileStruct, verror, dummy_exit);
     }
     #else
-    tokenize(&fileStruct, verror, exit);
+    lexer(&fileStruct, verror, exit);
     #endif
 
     f_free(&fileStruct);

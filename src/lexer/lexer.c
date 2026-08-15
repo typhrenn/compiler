@@ -1,5 +1,6 @@
-#include "lexer.h"
-#include "debug.h"
+#include "lexer/lexer.h"
+#include "utils/debug.h"
+#include "lexer/token.h"
 
 TokenType lookup_keyword(const char *text, size_t length) {
     switch (text[0]) {
@@ -73,7 +74,7 @@ TokenType lookup_keyword(const char *text, size_t length) {
     return TOKEN_IDENTIFIER; 
 }
 
-void tokenize(struct FileData *fileStruct, VerboseError throw, Fatal fatal) {
+void lexer(struct FileData *fileStruct, VerboseError throw, Fatal fatal) {
     const char *pos = fileStruct->data;
     const char *line_start = fileStruct->data;
     int lineCount = 1;
@@ -114,7 +115,7 @@ void tokenize(struct FileData *fileStruct, VerboseError throw, Fatal fatal) {
 				token.length = (int)(pos - token.value);
 				token.type = TOKEN_NUMBER;
 			} else {
-            // Basaed upon C23 / ISO/IEC 9899:2024 standard
+            // Based upon C23 / ISO/IEC 9899:2024 standard
 			char c = *pos++;
 			switch (c) {
 				case '(': token.type = TOKEN_LPAREN; break; // function call
@@ -127,6 +128,14 @@ void tokenize(struct FileData *fileStruct, VerboseError throw, Fatal fatal) {
 				case '.': token.type = TOKEN_DOT; break; // structure and union member access
 				case ',': token.type = TOKEN_COMMA; break;
                 case '~': token.type = TOKEN_TILDE; break; // bitwise NOT
+
+				// for now we will skip preprocessor lines as i don't know how will i handle them yet
+				case '#': {
+					while (*pos != '\n' && *pos != '\0') {
+						pos++;
+					}
+					continue;
+				}
                 
                 case '-': {
                     if (*pos == '>') {
@@ -339,7 +348,7 @@ void tokenize(struct FileData *fileStruct, VerboseError throw, Fatal fatal) {
                         (Location){fileStruct->filename, lineCount, column},
                         strcnstr(line_start, line_len),
                         1,
-                        "Unexpected character in source code: '%c'", c
+                        "Unexpected character: '%c'", c
                     );
                     fatalErr = true;
                     break;
