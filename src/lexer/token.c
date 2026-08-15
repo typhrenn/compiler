@@ -1,1 +1,31 @@
 #include "lexer/token.h"
+
+void tl_init(TokenStream *list) {
+    list->items = NULL;
+    list->count = 0;
+    list->capacity = 0;
+}
+
+void tl_push(TokenStream *list, Token token, Fatal fatal) {
+	if (list->count == list->capacity) {
+		size_t new_capacity = list->capacity == 0 ? 16 : list->capacity * 2;
+
+		Token *new_items = realloc(list->items, new_capacity*sizeof(Token));
+		if (new_items == NULL) {
+			error("run out of memory while performing reallocation of token stream capacity");
+			fatal(EXIT_FAILURE);
+		}
+
+		list->items = new_items;
+		list->capacity = new_capacity;
+	}
+
+	list->items[list->count++] = token;
+}
+
+void tl_free(TokenStream *list) {
+    free(list->items);
+    list->items = NULL;
+    list->count = 0;
+    list->capacity = 0;
+}
