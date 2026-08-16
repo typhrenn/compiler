@@ -74,7 +74,7 @@ TokenType lookup_keyword(const char *text, size_t length) {
     return TOKEN_IDENTIFIER; 
 }
 
-void lexer(struct FileData *fileStruct, VerboseError throw, Fatal fatal) {
+void lexer(struct FileData *fileStruct, ErrorHandle handler) {
     const char *pos = fileStruct->data;
     const char *line_start = fileStruct->data;
     int lineCount = 1;
@@ -326,7 +326,7 @@ void lexer(struct FileData *fileStruct, VerboseError throw, Fatal fatal) {
                         token.type = TOKEN_STRING_LITERAL;
                         pos++;
                     } else {
-                        throw(
+                        handler.verr(
                             (Location){fileStruct->filename, lineCount, column},
                             strcnstr(line_start, line_len),
                             1,
@@ -344,7 +344,7 @@ void lexer(struct FileData *fileStruct, VerboseError throw, Fatal fatal) {
 					}
                     int line_len = (int)(line_end - line_start);
 
-                    throw(
+                    handler.verr(
                         (Location){fileStruct->filename, lineCount, column},
                         strcnstr(line_start, line_len),
                         1,
@@ -368,6 +368,6 @@ void lexer(struct FileData *fileStruct, VerboseError throw, Fatal fatal) {
     }
 
     if (fatalErr) {
-        fatal(EXIT_FAILURE);
+        handler.fatal(EXIT_FAILURE);
     }
 }

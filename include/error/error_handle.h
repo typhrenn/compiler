@@ -19,11 +19,22 @@ typedef void (*Error)(const char *fmt, ...);
 typedef void (*VerboseError)(Location loc, String source_line, uint32_t length, const char *fmt, ...);
 typedef void (*Fatal)(int __status);
 
-__attribute__((noreturn)) __attribute__((format(printf, 1, 2))) void error(const char *fmt, ...);
-void verror(Location loc, String source_line, uint32_t length, const char *fmt, ...);
+void verbose_err(Location loc, String source_line, uint32_t length, const char *fmt, ...);
+__attribute__((noreturn)) __attribute__((format(printf, 1, 2))) void fatal_err(const char *fmt, ...);
+__attribute__((format(printf, 1, 2))) void err(const char *fmt, ...);
 
-__attribute__((format(printf, 1, 2))) void log_warning(const char *fmt, ...);
-__attribute__((format(printf, 1, 2))) void log_note(const char *fmt, ...);
+__attribute__((format(printf, 1, 2))) void warning_log(const char *fmt, ...);
+__attribute__((format(printf, 1, 2))) void note_log(const char *fmt, ...);
+
+typedef struct {
+    VerboseError 	verr;
+    Error      		ferr;
+    Error      		err;
+    Fatal			fatal;
+
+	Error			note;
+	Error			warning;
+} ErrorHandle;
 
 void dummy_exit(int __status);
 

@@ -6,14 +6,13 @@ void tl_init(TokenStream *list) {
     list->capacity = 0;
 }
 
-void tl_push(TokenStream *list, Token token, Fatal fatal) {
+void tl_push(TokenStream *list, Token token, Error ferr) {
 	if (list->count == list->capacity) {
 		size_t new_capacity = list->capacity == 0 ? 16 : list->capacity * 2;
 
 		Token *new_items = realloc(list->items, new_capacity*sizeof(Token));
 		if (new_items == NULL) {
-			error("run out of memory while performing reallocation of token stream capacity");
-			fatal(EXIT_FAILURE);
+			ferr("run out of memory while performing reallocation of token stream capacity");
 		}
 
 		list->items = new_items;

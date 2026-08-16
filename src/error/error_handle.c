@@ -6,7 +6,7 @@
 #define COLOR_CYAN    "\x1b[36m"
 #define COLOR_BOLD    "\x1b[1m"
 
-void verror(Location loc, String source_line, uint32_t length, const char *fmt, ...) {
+void verbose_err(Location loc, String source_line, uint32_t length, const char *fmt, ...) {
     fprintf(stderr, COLOR_BOLD "%s:%d:%d: " COLOR_RED "error: " COLOR_RESET COLOR_BOLD,
             loc.file ? loc.file : "<stdin>", loc.line, loc.column);
 
@@ -28,7 +28,7 @@ void verror(Location loc, String source_line, uint32_t length, const char *fmt, 
     }
 }
 
-__attribute__((noreturn)) __attribute__((format(printf, 1, 2))) void error(const char *fmt, ...) {
+__attribute__((noreturn)) __attribute__((format(printf, 1, 2))) void fatal_err(const char *fmt, ...) {
     fprintf(stderr, COLOR_BOLD COLOR_RED "fatal error: " COLOR_RESET COLOR_BOLD);
     
     va_list args;
@@ -40,24 +40,33 @@ __attribute__((noreturn)) __attribute__((format(printf, 1, 2))) void error(const
     exit(EXIT_FAILURE);
 }
 
-__attribute__((format(printf, 1, 2))) void log_warning(const char *fmt, ...) {
-    va_list args;
-    fprintf(stderr, COLOR_BOLD COLOR_MAGENTA "Warning: " COLOR_RESET);
-    va_start(args, fmt);
-    vfprintf(stderr, fmt, args);
-    va_end(args);
-    fprintf(stderr, "\n");
-}
-
-__attribute__((format(printf, 1, 2))) void log_note(const char *fmt, ...) {
-    va_list args;
-    fprintf(stderr, COLOR_BOLD COLOR_CYAN "Note: " COLOR_RESET);
-    va_start(args, fmt);
-    vfprintf(stderr, fmt, args);
-    va_end(args);
-    fprintf(stderr, "\n");
-}
-
-void dummy_exit(int __status) {
+__attribute__((format(printf, 1, 2))) void err(const char *fmt, ...) {
+    fprintf(stderr, COLOR_BOLD COLOR_RED "error: " COLOR_RESET COLOR_BOLD);
     
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(stderr, fmt, args);
+    va_end(args);
+
+    fprintf(stderr, COLOR_RESET "\n");
 }
+
+__attribute__((format(printf, 1, 2))) void warning_log(const char *fmt, ...) {
+    va_list args;
+    fprintf(stderr, COLOR_BOLD COLOR_MAGENTA "warning: " COLOR_RESET);
+    va_start(args, fmt);
+    vfprintf(stderr, fmt, args);
+    va_end(args);
+    fprintf(stderr, "\n");
+}
+
+__attribute__((format(printf, 1, 2))) void note_log(const char *fmt, ...) {
+    va_list args;
+    fprintf(stderr, COLOR_BOLD COLOR_CYAN "note: " COLOR_RESET);
+    va_start(args, fmt);
+    vfprintf(stderr, fmt, args);
+    va_end(args);
+    fprintf(stderr, "\n");
+}
+
+void dummy_exit(int __status) {}

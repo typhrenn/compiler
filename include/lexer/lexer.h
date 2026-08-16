@@ -54,6 +54,6 @@ static const Keyword keywords[] = {
 
 TokenType lookup_keyword(const char *text, size_t length);
 
-void lexer(struct FileData *fileStruct, VerboseError throw, Fatal fatal);
+void lexer(struct FileData *fileStruct, ErrorHandle handler);
 
 #endif

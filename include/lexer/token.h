@@ -37,7 +37,7 @@ typedef struct {
 
 void tl_init(TokenStream *list);
 
-void tl_push(TokenStream *list, Token token, Fatal fatal);
+void tl_push(TokenStream *list, Token token, Error ferr);
 
 void tl_free(TokenStream *list);
 
