@@ -3,6 +3,10 @@
 #include "lexer/lexer.h"
 #include "utils/debug.h" 
 
+void chckargc(int argc, Error throw) {
+    if (argc < 2) throw("No arguments provided\n");
+}
+
 void compile(struct FileData *fileStruct, struct ErrorHandler handler) {
     f_fill(fileStruct, handler.ferr);
 
@@ -23,28 +27,27 @@ void compile(struct FileData *fileStruct, struct ErrorHandler handler) {
 	f_free(fileStruct);
 }
 
+void setup(struct FileData *fileStruct, struct ErrorHandler *handler, char *argv) {
+    fileStruct->filename    = argv;
+    fileStruct->file        = NULL;
+    fileStruct->length      = 0;
+    fileStruct->data        = NULL;
+
+    handler->err            = err;
+    handler->verr           = verbose_err;
+    handler->ferr           = fatal_err;
+
+    handler->fatal          = exit;
+
+    handler->warning        = warning_log;
+    handler->note           = note_log;
+}
+
 int main(int argc, char **argv) {
-    if (argc < 2) {
-        fatal_err("No arguments provided\n");
-    }
+    struct FileData fileStruct;
+    struct ErrorHandler handler;
 
-    struct FileData fileStruct = {
-        .filename = argv[1],
-        .file = NULL,
-        .length = 0,
-        .data = NULL
-    };
-
-	struct ErrorHandler handler = {
-		.err = err,
-		.verr = verbose_err,
-		.ferr = fatal_err,
-		
-		.fatal = exit,
-
-		.warning = warning_log,
-		.note = note_log
-	};
-
+    chckargc(argc, fatal_err);
+    setup(&fileStruct, &handler, argv[1]);
 	compile(&fileStruct, handler);
 }
