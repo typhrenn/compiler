@@ -26,7 +26,7 @@ __attribute__((format(printf, 1, 2))) void err(const char *fmt, ...);
 __attribute__((format(printf, 1, 2))) void warning_log(const char *fmt, ...);
 __attribute__((format(printf, 1, 2))) void note_log(const char *fmt, ...);
 
-typedef struct {
+struct ErrorHandler {
     VerboseError 	verr;
     Error      		ferr;
     Error      		err;
@@ -34,7 +34,7 @@ typedef struct {
 
 	Error			note;
 	Error			warning;
-} ErrorHandle;
+};
 
 void dummy_exit(int __status);
 

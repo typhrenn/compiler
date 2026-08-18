@@ -3,7 +3,7 @@
 #include "lexer/lexer.h"
 #include "utils/debug.h" 
 
-void compile(struct FileData *fileStruct, ErrorHandle handler) {
+void compile(struct FileData *fileStruct, struct ErrorHandler handler) {
     f_fill(fileStruct, handler.ferr);
 
     #ifdef DEBUG
@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
         .data = NULL
     };
 
-	ErrorHandle handler = {
+	struct ErrorHandler handler = {
 		.err = err,
 		.verr = verbose_err,
 		.ferr = fatal_err,

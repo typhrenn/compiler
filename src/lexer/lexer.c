@@ -74,7 +74,7 @@ TokenType lookup_keyword(const char *text, size_t length) {
     return TOKEN_IDENTIFIER; 
 }
 
-void lexer(struct FileData *fileStruct, ErrorHandle handler) {
+void lexer(struct FileData *fileStruct, struct ErrorHandler handler) {
     const char *pos = fileStruct->data;
     const char *line_start = fileStruct->data;
     int lineCount = 1;

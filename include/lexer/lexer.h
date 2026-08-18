@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "utils/file.h"
 #include "token.h"
 
@@ -54,6 +53,6 @@ static const Keyword keywords[] = {
 
 TokenType lookup_keyword(const char *text, size_t length);
 
-void lexer(struct FileData *fileStruct, ErrorHandle handler);
+void lexer(struct FileData *fileStruct, struct ErrorHandler handler);
 
 #endif
