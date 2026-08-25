@@ -4,6 +4,19 @@
 #include <stdlib.h>
 
 typedef enum {
+    // preprocessor
+    PP_IF,
+    PP_ELIF,
+    PP_ELSE,
+    PP_ENDIF,
+    PP_IFDEF,
+    PP_IFNDEF,
+    PP_ELIFDEF,
+    PP_ELIFNDEF,
+
+    PP_INCLUDE,
+    PP_DEFINE,
+
     // basic types and const
     TOKEN_VOID,
     TOKEN_CONST,

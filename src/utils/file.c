@@ -1,6 +1,6 @@
 #include "utils/file.h"
 
-void f_size(struct FileData *fileStructure, Error throw) {
+void f_size(struct CoreData *fileStructure, Error throw) {
     if (fileStructure->file == NULL) {
         throw("File is null, unable to get size\n");
     }
@@ -9,7 +9,7 @@ void f_size(struct FileData *fileStructure, Error throw) {
     fseek(fileStructure->file, 0, SEEK_SET);
 }
 
-void f_data(struct FileData *fileStructure, Error throw) {
+void f_data(struct CoreData *fileStructure, Error throw) {
     fileStructure->data = malloc(sizeof(char) * fileStructure->length + 1);
     if (fileStructure->data == NULL) {
         throw("unable to allocate memory for data");
@@ -19,7 +19,7 @@ void f_data(struct FileData *fileStructure, Error throw) {
     fileStructure->data[fileStructure->length] = '\0';
 }
 
-void f_open(struct FileData *fileStruct, Error throw) {
+void f_open(struct CoreData *fileStruct, Error throw) {
     if (fileStruct->filename == NULL) {
         throw("No filename provided\n");
     }
@@ -29,20 +29,20 @@ void f_open(struct FileData *fileStruct, Error throw) {
     }
 }
 
-void f_fill(struct FileData *fileStruct, Error throw) {
+void f_fill(struct CoreData *fileStruct, Error throw) {
     f_open(fileStruct, throw);
     f_size(fileStruct, throw);
     f_data(fileStruct, throw);
 }
 
-void f_out(struct FileData *fileStruct) {
+void f_out(struct CoreData *fileStruct) {
     for (int i = 0; i < fileStruct->length; i++) {
         printf("%c", fileStruct->data[i]);
     }
     printf("\n");
 }
 
-void f_free(struct FileData *fileStruct) {
+void f_free(struct CoreData *fileStruct) {
     free(fileStruct->data);
     fclose(fileStruct->file);
 }

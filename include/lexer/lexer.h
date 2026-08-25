@@ -16,6 +16,17 @@ typedef struct {
 } Keyword;
 
 static const Keyword keywords[] = {
+	{"#if",		3, PP_IF},
+	{"#elif",	5, PP_ELIF},
+	{"#else",	5, PP_ELSE},
+	{"#endif",	6, PP_ENDIF},
+	{"#ifdef",	6, PP_IFDEF},
+	{"#ifndef",	7, PP_IFNDEF},
+	{"#elifdef",	8, PP_ELIFDEF},
+	{"#elifndef",	9, PP_ELIFNDEF},
+	{"#include",	8, PP_INCLUDE},
+	{"#define",	7, PP_DEFINE},
+
 	{"void",	 4, TOKEN_VOID},
 	{"const",	 5, TOKEN_CONST},
 	{"bool",	 4, TOKEN_BOOL},
@@ -53,6 +64,6 @@ static const Keyword keywords[] = {
 
 TokenType lookup_keyword(const char *text, size_t length);
 
-void lexer(struct FileData *fileStruct, struct ErrorHandler handler);
+void lexer(struct CoreData *fileStruct, struct ErrorHandler handler);
 
 #endif

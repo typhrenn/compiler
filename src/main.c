@@ -4,34 +4,37 @@
 #include "utils/debug.h" 
 
 void chckargc(int argc, Error throw) {
-    if (argc < 2) throw("No arguments provided\n");
+    if (argc < 2) throw("No arguments provided\n\texpected: compiler <input file>");
 }
 
-void compile(struct FileData *fileStruct, struct ErrorHandler handler) {
-    f_fill(fileStruct, handler.ferr);
+void compile(struct CoreData *c_data, struct ErrorHandler handler) {
+    f_fill(c_data, handler.ferr);
 
     #ifdef DEBUG
-        printf("This is the size of test file: %ld\n", fileStruct->length);
-        f_out(fileStruct);
+        printf("This is the size of test file: %ld\n", c_data->length);
+        f_out(c_data);
     #endif
 
     #ifdef BENCHMARK
 		handler.ferr = dummy_exit;
         for (int i = 0; i < 1000000; i++) {
-            lexer(fileStruct, handler);
+            lexer(c_data, handler);
         }
     #else
-        lexer(fileStruct, handler);
+        lexer(c_data, handler);
     #endif
 
-	f_free(fileStruct);
+    ts_free(c_data->t_stream);
+	f_free(c_data);
 }
 
-void setup(struct FileData *fileStruct, struct ErrorHandler *handler, char *argv) {
-    fileStruct->filename    = argv;
-    fileStruct->file        = NULL;
-    fileStruct->length      = 0;
-    fileStruct->data        = NULL;
+void setup(struct CoreData *c_data, struct ErrorHandler *handler, char *argv) {
+    ts_init(c_data->t_stream);
+
+    c_data->filename    = argv;
+    c_data->file        = NULL;
+    c_data->length      = 0;
+    c_data->data        = NULL;
 
     handler->err            = err;
     handler->verr           = verbose_err;
@@ -44,10 +47,10 @@ void setup(struct FileData *fileStruct, struct ErrorHandler *handler, char *argv
 }
 
 int main(int argc, char **argv) {
-    struct FileData fileStruct;
+    struct CoreData c_data;
     struct ErrorHandler handler;
 
     chckargc(argc, fatal_err);
-    setup(&fileStruct, &handler, argv[1]);
-	compile(&fileStruct, handler);
+    setup(&c_data, &handler, argv[1]);
+	compile(&c_data, handler);
 }

@@ -10,7 +10,7 @@
 
 // MULTI-TOKEN SYNTAX
 static inline bool token_start(char c) {
-    return isalpha((unsigned char)c) || c == '_';
+    return isalpha((unsigned char)c) || c == '_' || c == '#';
 }
 
 // Valid continuing character for an Identifier
@@ -35,10 +35,10 @@ typedef struct {
 	int 	capacity;
 } TokenStream;
 
-void tl_init(TokenStream *list);
+void ts_init(TokenStream *list);
 
-void tl_push(TokenStream *list, Token token, Error ferr);
+void ts_push(TokenStream *list, Token token, Error ferr);
 
-void tl_free(TokenStream *list);
+void ts_free(TokenStream *list);
 
 #endif

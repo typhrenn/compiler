@@ -4,6 +4,19 @@
 
 TokenType lookup_keyword(const char *text, size_t length) {
     switch (text[0]) {
+        case '#': {
+            if (length == 3 && memcmp(text, "#if", 3) == 0) return PP_IF;
+            if (length == 5 && memcmp(text, "#elif", 5) == 0) return PP_ELIF;
+            if (length == 5 && memcmp(text, "#else", 5) == 0) return PP_ELSE;
+            if (length == 6 && memcmp(text, "#endif", 6) == 0) return PP_ENDIF;
+            if (length == 6 && memcmp(text, "#ifdef", 6) == 0) return PP_IFDEF;
+            if (length == 7 && memcmp(text, "#ifndef", 7) == 0) return PP_IFNDEF;
+            if (length == 8 && memcmp(text, "#elifdef", 8) == 0) return PP_ELIFDEF;
+            if (length == 9 && memcmp(text, "#elifndef", 9) == 0) return PP_ELIFNDEF;
+            if (length == 8 && memcmp(text, "#include", 8) == 0) return PP_INCLUDE;
+            if (length == 7 && memcmp(text, "#define", 7) == 0) return PP_DEFINE;
+            break;
+        }
         case 'b': {
             if (length == 4 && memcmp(text, "bool", 4) == 0) return TOKEN_BOOL;
             if (length == 5 && memcmp(text, "break", 5) == 0) return TOKEN_BREAK;
@@ -74,7 +87,7 @@ TokenType lookup_keyword(const char *text, size_t length) {
     return TOKEN_IDENTIFIER; 
 }
 
-void lexer(struct FileData *fileStruct, struct ErrorHandler handler) {
+void lexer(struct CoreData *fileStruct, struct ErrorHandler handler) {
     const char *pos = fileStruct->data;
     const char *line_start = fileStruct->data;
     int lineCount = 1;
@@ -330,7 +343,7 @@ void lexer(struct FileData *fileStruct, struct ErrorHandler handler) {
                             (Location){fileStruct->filename, lineCount, column},
                             strcnstr(line_start, line_len),
                             1,
-                            "string literal not terminated properly"
+                            "string literal not properly terminated"
                         );
                     }
 
@@ -365,6 +378,8 @@ void lexer(struct FileData *fileStruct, struct ErrorHandler handler) {
 		);
         counter++;
         #endif
+
+        ts_push(fileStruct->t_stream, (Token){token.value, token.length, token.length}, handler.ferr);
     }
 
     if (fatalErr) {
