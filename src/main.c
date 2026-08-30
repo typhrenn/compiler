@@ -2,10 +2,7 @@
 #include "error/error_handle.h"
 #include "lexer/lexer.h"
 #include "utils/debug.h" 
-
-void chckargc(int argc, Error throw) {
-    if (argc < 2) throw("No arguments provided\n\texpected: compiler <input file>");
-}
+#include "parameters/parameters.h"
 
 void compile(struct CoreData *c_data, struct ErrorHandler handler) {
     f_fill(c_data, handler.ferr);
@@ -49,8 +46,9 @@ void setup(struct CoreData *c_data, struct ErrorHandler *handler, char *argv) {
 int main(int argc, char **argv) {
     struct CoreData c_data;
     struct ErrorHandler handler;
+	CompileInfo info;
 
-    chckargc(argc, fatal_err);
+    chckargs(&info, argc, argv, fatal_err);
     setup(&c_data, &handler, argv[1]);
 	compile(&c_data, handler);
 }
