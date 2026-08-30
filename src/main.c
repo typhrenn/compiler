@@ -3,7 +3,7 @@
 #include "lexer/lexer.h"
 #include "utils/debug.h" 
 
-void chckargc(int argc, Error throw) {
+void chckargc(int argc, char **argv, Error throw) {
     if (argc < 2) throw("No arguments provided\n\texpected: compiler <input file>");
 }
 
@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
     struct CoreData c_data;
     struct ErrorHandler handler;
 
-    chckargc(argc, fatal_err);
+    chckargc(argc, argv, fatal_err);
     setup(&c_data, &handler, argv[1]);
 	compile(&c_data, handler);
 }
