@@ -7,3 +7,4 @@ perf.data
 perf.data.old
 compile_commands.json
 .cache
+env

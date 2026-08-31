@@ -9,9 +9,9 @@ SRC = src/main.c $(wildcard src/utils/*.c src/lexer/*.c src/error/*.c src/parame
 OUTDIR = env
 
 ifeq ($(OS),Windows_NT)
-    OUT = compiler.exe
+    OUT = ${OUTDIR}/compiler.exe
 else
-    OUT = compiler
+    OUT = ${OUTDIR}/compiler
 endif
 
 .PHONY: all clean run create_env
