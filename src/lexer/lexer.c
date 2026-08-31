@@ -87,7 +87,7 @@ TokenType lookup_keyword(const char *text, size_t length) {
     return TOKEN_IDENTIFIER; 
 }
 
-void lexer(struct CoreData *fileStruct, struct ErrorHandler handler) {
+void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
     const char *pos = fileStruct->data;
     const char *line_start = fileStruct->data;
     int lineCount = 1;
@@ -141,14 +141,6 @@ void lexer(struct CoreData *fileStruct, struct ErrorHandler handler) {
 				case '.': token.type = TOKEN_DOT; break; // structure and union member access
 				case ',': token.type = TOKEN_COMMA; break;
                 case '~': token.type = TOKEN_TILDE; break; // bitwise NOT
-
-				// for now we will skip preprocessor lines as i don't know how will i handle them yet
-				case '#': {
-					while (*pos != '\n' && *pos != '\0') {
-						pos++;
-					}
-					continue;
-				}
                 
                 case '-': {
                     if (*pos == '>') {

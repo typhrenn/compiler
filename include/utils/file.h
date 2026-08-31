@@ -9,7 +9,7 @@
 #include "lexer/token.h"
 
 struct CoreData {
-    char *filename;
+    const char *filename;
     FILE *file;
     
     long length;

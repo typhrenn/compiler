@@ -5,6 +5,12 @@
 #include "utils/file.h"
 #include "parameters/parameters.h"
 
+#ifdef _WIN32
+    #define DEFAULT_OUT "a.exe"
+#else
+    #define DEFAULT_OUT "a.out"
+#endif
+
 static const char *TARGET_EXT = ".acf";
 
 bool validate_ext(const char *path, Error err) {
@@ -24,6 +30,8 @@ void init_ci(CompileInfo *info, int argc) {
 
 	info->include.count = 0;
 	info->source.count = 0;
+
+	info->output = NULL;
 }
 
 void append_ci(TargetList *list, Target target) {
@@ -72,4 +80,20 @@ void chckargs(CompileInfo *info, int argc, char **argv, Error err) {
             }
         } else err("unknown parameter\n\t%s <-", argv[i]);
     }
+
+	if(info->output == NULL) info->output = DEFAULT_OUT;
+}
+
+void print_ci(CompileInfo *info) {
+	printf("Output file -> %s\n\n", info->output);
+
+	printf("Source files ->\n");
+	for (int i = 0; i < info->source.count; i++) {
+		printf("\t-> %s\n", info->source.target[i]);
+	}
+
+	printf("Include paths ->\n");
+	for (int i = 0; i < info->include.count; i++) {
+		printf("\t-> %s\n", info->include.target[i]);
+	}
 }

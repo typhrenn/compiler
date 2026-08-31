@@ -24,5 +24,6 @@ void append_ci(TargetList *list, Target target);
 void free_ci(CompileInfo *info);
 
 void chckargs(CompileInfo *info, int argc, char **argv, Error err);
+void print_ci(CompileInfo *info);
 
 #endif
