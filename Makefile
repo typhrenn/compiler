@@ -1,17 +1,44 @@
+# Compiler flags
 CC = gcc
 CFLAGS = -Iinclude -Wall
 LDFLAGS = -lm
 
-SRC = src/main.c src/utils/*.c src/lexer/*.c src/error/*.c
-OUT = compiler
+SRC = src/main.c $(wildcard src/utils/*.c src/lexer/*.c src/error/*.c src/parameters/*.c)
+
+# Environment and output
+OUTDIR = env
+
+ifeq ($(OS),Windows_NT)
+    OUT = compiler.exe
+else
+    OUT = compiler
+endif
+
+.PHONY: all clean run create_env
 
 all: $(OUT)
 
 $(OUT): $(SRC)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-clean:
-	rm -f $(OUT)
+create_env:
+ifeq ($(OS),Windows_NT)
+	if not exist $(OUTDIR)\src mkdir $(OUTDIR)\src
+	if not exist $(OUTDIR)\include mkdir $(OUTDIR)\include
+else
+	mkdir -p $(OUTDIR)/src $(OUTDIR)/include
+endif
 
-run:
-	./${OUT}
+clean:
+ifeq ($(OS),Windows_NT)
+	if exist $(OUT) del /Q /F $(OUT)
+else
+	rm -f $(OUT)
+endif
+
+run: $(OUT)
+ifeq ($(OS),Windows_NT)
+	.\$(OUT)
+else
+	./$(OUT)
+endif
