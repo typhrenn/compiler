@@ -18,10 +18,16 @@ bool validate_ext(const char *path, Error err) {
     
     const char *dot = strrchr(path, '.');
     if (!dot || dot == path) {
-		err("Unknow source file type:\n\t%s <-", path);
+        err("Unknown source file type:\n\t%s <-", path);
+        return false;
     }
     
-    return strcmp(dot, TARGET_EXT) == 0;
+    if (strcmp(dot, TARGET_EXT) != 0) {
+        err("Unexpected file extension '%s' (expected %s):\n\t%s <-", dot, TARGET_EXT, path);
+        return false;
+    }
+    
+    return true;
 }
 
 void init_ci(CompileInfo *info, int argc) {

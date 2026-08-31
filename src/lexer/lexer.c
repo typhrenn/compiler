@@ -115,9 +115,9 @@ void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
 
 		// Identifiers and tokens
         if (token_start(*pos)) {
-			while (token_body(*pos)) {
+			do {
 				pos++;
-			}
+			} while (token_body(*pos));
 			token.length = (int)(pos - token.value);
 
 			token.type = lookup_keyword(token.value, token.length);
