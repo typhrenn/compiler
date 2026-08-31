@@ -4,6 +4,9 @@
 #include <stdlib.h>
 
 typedef enum {
+	// tokenizing
+	TOKEN_NEWLINE,
+	TOKEN_EOF,
     // preprocessor
     PP_IF,
     PP_ELIF,

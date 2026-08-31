@@ -15,11 +15,13 @@ typedef struct {
     int column;
 } Location;
 
+struct IncludeFrame;
+
 typedef void (*Error)(const char *fmt, ...);
-typedef void (*VerboseError)(Location loc, String source_line, uint32_t length, const char *fmt, ...);
+typedef void (*VerboseError)(struct IncludeFrame *frame, int column, uint32_t length, const char *fmt, ...);
 typedef void (*Fatal)(int __status);
 
-void verbose_err(Location loc, String source_line, uint32_t length, const char *fmt, ...);
+void verbose_err(struct IncludeFrame *frame, int column, uint32_t length, const char *fmt, ...);
 __attribute__((noreturn)) __attribute__((format(printf, 1, 2))) void fatal_err(const char *fmt, ...);
 __attribute__((format(printf, 1, 2))) void err(const char *fmt, ...);
 

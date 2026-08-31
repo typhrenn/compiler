@@ -10,4 +10,11 @@ static inline String strcnstr(const char *string, int len) {
     return (String){string, len};
 }
 
+typedef struct IncludeFrame {
+    const char *filename;
+    const char *pos;
+    const char *line_start;
+    int         line;
+} IncludeFrame;
+
 #endif

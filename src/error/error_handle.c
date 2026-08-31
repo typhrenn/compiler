@@ -1,4 +1,5 @@
 #include "error/error_handle.h"
+#include "utils/utils.h"
 
 #define COLOR_RESET   "\x1b[0m"
 #define COLOR_RED     "\x1b[31m"
@@ -6,9 +7,15 @@
 #define COLOR_CYAN    "\x1b[36m"
 #define COLOR_BOLD    "\x1b[1m"
 
-void verbose_err(Location loc, String source_line, uint32_t length, const char *fmt, ...) {
+void verbose_err(struct IncludeFrame *frame, int column, uint32_t length, const char *fmt, ...) {
+    const char *line_end = frame->line_start;
+    while (*line_end != '\n' && *line_end != '\0') {
+        line_end++;
+    }
+    int line_len = (int)(line_end - frame->line_start);
+
     fprintf(stderr, COLOR_BOLD "%s:%d:%d: " COLOR_RED "error: " COLOR_RESET COLOR_BOLD,
-            loc.file ? loc.file : "<stdin>", loc.line, loc.column);
+            frame->filename ? frame->filename : "<stdin>", frame->line, column);
 
     va_list args;
     va_start(args, fmt);
@@ -16,18 +23,17 @@ void verbose_err(Location loc, String source_line, uint32_t length, const char *
     va_end(args);
     fprintf(stderr, COLOR_RESET "\n");
 
-    if (source_line.string && source_line.len > 0) {
-        fprintf(stderr, " %5d | %.*s\n", loc.line, source_line.len, source_line.string);
+    if (line_len > 0) {
+        fprintf(stderr, " %5d | %.*s\n", frame->line, line_len, frame->line_start);
 
         fprintf(stderr, "       | ");
-        for (int i = 1; i < loc.column + length && i <= source_line.len; i++) {
-            fputc(source_line.string[i - 1] == '\t' ? '\t' : ' ', stderr);
+        for (int i = 1; i < column + (int)length && i <= line_len; i++) {
+            fputc(frame->line_start[i - 1] == '\t' ? '\t' : ' ', stderr);
         }
 
         fprintf(stderr, COLOR_BOLD COLOR_RED "^" COLOR_RESET "\n");
     }
 }
-
 __attribute__((noreturn)) __attribute__((format(printf, 1, 2))) void fatal_err(const char *fmt, ...) {
     fprintf(stderr, COLOR_BOLD COLOR_RED "fatal error: " COLOR_RESET COLOR_BOLD);
     

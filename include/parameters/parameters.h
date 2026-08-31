@@ -7,7 +7,7 @@ typedef const char* Target;
 typedef struct {
     Target *target;
 
-    int count;
+    size_t count;
 } TargetList;
 
 typedef struct {

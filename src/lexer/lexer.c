@@ -88,48 +88,54 @@ TokenType lookup_keyword(const char *text, size_t length) {
 }
 
 void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
-    const char *pos = fileStruct->data;
-    const char *line_start = fileStruct->data;
-    int lineCount = 1;
+    IncludeFrame frame = {
+        .filename   = fileStruct->filename,
+        .pos        = fileStruct->data,
+        .line_start = fileStruct->data,
+        .line       = 1
+    };
+
     bool fatalErr = false;
 
     int counter __attribute__((unused)) = 1;
 
-    while (*pos != '\0') {
-        if (*pos == '\n') {
-            pos++;
-            lineCount++;
-            line_start = pos;
-            continue;
-        } 
+    while (*frame.pos != '\0') {
+		// newline token for preprocessor
+		if (*frame.pos == '\n') {
+			frame.pos++;
+			frame.line++;
+			frame.line_start = frame.pos;
+			ts_push(fileStruct->t_stream, (Token){frame.pos, 1, TOKEN_NEWLINE}, handler.ferr);
+			continue;
+		}
 
         // Check for white spaces
-        if (isspace((unsigned char)*pos)) {
-            pos++;
+        if (isspace((unsigned char)*frame.pos)) {
+            frame.pos++;
             continue;
         }
 
         Token token;
-        token.value = pos;
-		int column = (int)(token.value - line_start) + 1;
+        token.value = frame.pos;
+		int column = (int)(token.value - frame.line_start) + 1;
 
 		// Identifiers and tokens
-        if (token_start(*pos)) {
+        if (token_start(*frame.pos)) {
 			do {
-				pos++;
-			} while (token_body(*pos));
-			token.length = (int)(pos - token.value);
+				frame.pos++;
+			} while (token_body(*frame.pos));
+			token.length = (int)(frame.pos - token.value);
 
 			token.type = lookup_keyword(token.value, token.length);
-		} else if (isdigit((unsigned char)*pos)) {
-				while (isdigit((unsigned char)*pos)) {
-					pos++;
+		} else if (isdigit((unsigned char)*frame.pos)) {
+				while (isdigit((unsigned char)*frame.pos)) {
+					frame.pos++;
 				}
-				token.length = (int)(pos - token.value);
+				token.length = (int)(frame.pos - token.value);
 				token.type = TOKEN_NUMBER;
 			} else {
             // Based upon C23 / ISO/IEC 9899:2024 standard
-			char c = *pos++;
+			char c = *frame.pos++;
 			switch (c) {
 				case '(': token.type = TOKEN_LPAREN; break; // function call
 				case ')': token.type = TOKEN_RPAREN; break; 
@@ -143,14 +149,14 @@ void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
                 case '~': token.type = TOKEN_TILDE; break; // bitwise NOT
                 
                 case '-': {
-                    if (*pos == '>') {
-                        pos++;
+                    if (*frame.pos == '>') {
+                        frame.pos++;
                         token.type = TOKEN_ARROW; // structure and union member access through pointer
-                    } else if (*pos == '=') {
-                        pos++;
+                    } else if (*frame.pos == '=') {
+                        frame.pos++;
                         token.type = TOKEN_MINUS_EQUAL; // Assignment by difference
-                    } else if (*pos == '-') {
-                        pos++;
+                    } else if (*frame.pos == '-') {
+                        frame.pos++;
                         token.type = TOKEN_DECREMENT; // decrement
                     } else {
                         token.type = TOKEN_MINUS; // Subtraction or unary minus
@@ -160,11 +166,11 @@ void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
                 }
 
                 case '+': {
-                    if (*pos == '=') {
-                        pos++;
+                    if (*frame.pos == '=') {
+                        frame.pos++;
                         token.type = TOKEN_PLUS_EQUAL; // Assignment by sum
-                    } else if (*pos == '+') {
-                        pos++;
+                    } else if (*frame.pos == '+') {
+                        frame.pos++;
                         token.type = TOKEN_INCREMENT; // increment
                     } else {
                         token.type = TOKEN_PLUS; // Addition or unary plus
@@ -174,8 +180,8 @@ void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
                 }
 
                 case '!': {
-                    if (*pos == '=') {
-                        pos++;
+                    if (*frame.pos == '=') {
+                        frame.pos++;
                         token.type = TOKEN_EXCL_EQUAL; // relational operator not equal to
                     } else {
                         token.type = TOKEN_EXCL; // logical NOT
@@ -185,8 +191,8 @@ void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
                 }
 
                 case '*': {
-                    if (*pos == '=') {
-                        pos++;
+                    if (*frame.pos == '=') {
+                        frame.pos++;
                         token.type = TOKEN_ASTERISK_EQUAL; // Assignment by product
                     } else {
                         token.type = TOKEN_ASTERISK; // dereference and multiplication
@@ -196,11 +202,11 @@ void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
                 }
 
                 case '&': {
-                    if (*pos == '&') {
-                        pos++;
+                    if (*frame.pos == '&') {
+                        frame.pos++;
                         token.type = TOKEN_AMPERS_AMPERS; // Logical AND
-                    } else if (*pos == '=') {
-                        pos++;
+                    } else if (*frame.pos == '=') {
+                        frame.pos++;
                         token.type = TOKEN_AMPERS_EQUAL; // Assignment by bitwise AND
                     } else {
                         token.type = TOKEN_AMPERS; // Bitwise AND and adress-of
@@ -210,12 +216,12 @@ void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
                 }
 
                 case '/': {
-                    if (*pos == '=') {
-                        pos++;
+                    if (*frame.pos == '=') {
+                        frame.pos++;
                         token.type = TOKEN_SLASH_EQUAL; // Assignment by quotient
-                    } else if (*pos == '/') {
-                        while (*pos != '\n' && *pos != '\0') {
-                            pos++;
+                    } else if (*frame.pos == '/') {
+                        while (*frame.pos != '\n' && *frame.pos != '\0') {
+                            frame.pos++;
                         }
 						continue;
                     } else {
@@ -226,8 +232,8 @@ void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
                 }
 
                 case '%': {
-                    if (*pos == '=') {
-                        pos++;
+                    if (*frame.pos == '=') {
+                        frame.pos++;
                         token.type = TOKEN_PERC_EQUAL; // Assignment by reminder
                     } else {
                         token.type = TOKEN_PERC; // reminder
@@ -237,16 +243,16 @@ void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
                 }
 
                 case '<': {
-                    if (*pos == '<') {
-                        pos++;
-                        if (*pos == '=') {
-                            pos++;
+                    if (*frame.pos == '<') {
+                        frame.pos++;
+                        if (*frame.pos == '=') {
+                            frame.pos++;
                             token.type = TOKEN_LESS_LESS_EQUAL; // Assignment by bitwise left shift
                         } else {
                             token.type = TOKEN_LESS_LESS; // Bitwise left shift
                         }
-                    } else if (*pos == '=') {
-                        pos++;
+                    } else if (*frame.pos == '=') {
+                        frame.pos++;
                         token.type = TOKEN_LESS_EQUAL; // relational operator less or equal to
                     } else {
                         token.type = TOKEN_LESS; // relational operator less
@@ -256,16 +262,16 @@ void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
                 }
 
                 case '>': {
-                    if (*pos == '>') {
-                        pos++;
-                        if (*pos == '=') {
-                            pos++;
+                    if (*frame.pos == '>') {
+                        frame.pos++;
+                        if (*frame.pos == '=') {
+                            frame.pos++;
                             token.type = TOKEN_MORE_MORE_EQUAL; // Assignment by bitwise right shift
                         } else {
                             token.type = TOKEN_MORE_MORE; // Bitwise right shift
                         }
-                    } else if (*pos == '=') {
-                        pos++;
+                    } else if (*frame.pos == '=') {
+                        frame.pos++;
                         token.type = TOKEN_MORE_EQUAL; // relational operator more or equal to
                     } else {
                         token.type = TOKEN_MORE; // relational operator more
@@ -275,8 +281,8 @@ void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
                 }
 
                 case '=': {
-                    if (*pos == '=') {
-                        pos++;
+                    if (*frame.pos == '=') {
+                        frame.pos++;
                         token.type = TOKEN_EQUAL_EQUAL; // relational operator equal to
                     } else {
                         token.type = TOKEN_EQUAL; // Assignment operator
@@ -286,8 +292,8 @@ void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
                 }
 
                 case '^': {
-                    if (*pos == '=') {
-                        pos++;
+                    if (*frame.pos == '=') {
+                        frame.pos++;
                         token.type = TOKEN_CARET_EQUAL; // Assignment by bitwise XOR
                     } else {
                         token.type = TOKEN_CARET; // Logical XOR
@@ -297,11 +303,11 @@ void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
                 }
     
                 case '|': {
-                    if (*pos == '=') {
-                        pos++;
+                    if (*frame.pos == '=') {
+                        frame.pos++;
                         token.type = TOKEN_PIPE_EQUAL; // Assignment by bitwise OR
-                    } else if (*pos == '|') {
-                        pos++;
+                    } else if (*frame.pos == '|') {
+                        frame.pos++;
                         token.type = TOKEN_PIPE_PIPE; // Logical OR
                     } else {
                         token.type = TOKEN_PIPE; // Bitwise OR
@@ -311,29 +317,28 @@ void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
                 }
 
                 case '"': {
-                    const char *line_end = line_start;
+                    const char *line_end = frame.line_start;
 					while (*line_end != '\n' && *line_end != '\0') {
 						line_end++;
 					}
-                    int line_len = (int)(line_end - line_start);
-                    pos++; 
+                    frame.pos++; 
 
-                    const char *start __attribute__((unused)) = pos;
+                    const char *start __attribute__((unused)) = frame.pos;
 
-                    while (*pos != '"' && *pos != '\0') {
-                        if (*pos == '\\' && *(pos + 1) != '\0') {
-                            pos++;
+                    while (*frame.pos != '"' && *frame.pos != '\0') {
+                        if (*frame.pos == '\\' && *(frame.pos + 1) != '\0') {
+                            frame.pos++;
                         }
-                        pos++;
+                        frame.pos++;
                     }
 
-                    if (*pos == '"') {
+                    if (*frame.pos == '"') {
                         token.type = TOKEN_STRING_LITERAL;
-                        pos++;
+                        frame.pos++;
                     } else {
                         handler.verr(
-                            (Location){fileStruct->filename, lineCount, column},
-                            strcnstr(line_start, line_len),
+                            &frame,
+                            column,
                             1,
                             "string literal not properly terminated"
                         );
@@ -343,16 +348,15 @@ void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
                 }
 
 				default: {
-					const char *line_end = line_start;
+					const char *line_end = frame.line_start;
 					while (*line_end != '\n' && *line_end != '\0') {
 						line_end++;
 					}
-                    int line_len = (int)(line_end - line_start);
 
                     handler.verr(
-                        (Location){fileStruct->filename, lineCount, column},
-                        strcnstr(line_start, line_len),
-                        1,
+						&frame,
+						column,
+						1,
                         "Unexpected character: '%c'", c
                     );
                     fatalErr = true;
@@ -362,17 +366,19 @@ void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
 			}
 		}
 
-        token.length = (int)(pos - token.value);
+        token.length = (int)(frame.pos - token.value);
 
         #ifdef DEBUG
         printf("Token %d (Line %d, Col %d):\t%.*s\n", 
-               counter, lineCount, column, (int)token.length, token.value
+               counter, frame.line, column, (int)token.length, token.value
 		);
         counter++;
         #endif
 
-        ts_push(fileStruct->t_stream, (Token){token.value, token.length, token.length}, handler.ferr);
+        ts_push(fileStruct->t_stream, (Token){token.value, token.length, token.type}, handler.ferr);
     }
+
+    ts_push(fileStruct->t_stream, (Token){frame.pos, 0, TOKEN_EOF}, handler.ferr);
 
     if (fatalErr) {
         handler.fatal(EXIT_FAILURE);

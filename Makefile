@@ -1,6 +1,6 @@
 # Compiler flags
 CC = gcc
-CFLAGS = -Iinclude -Wall
+CFLAGS = -Iinclude -Wall -O5
 LDFLAGS = -lm
 
 SRC = src/main.c $(wildcard src/utils/*.c src/lexer/*.c src/error/*.c src/parameters/*.c)
