@@ -3,6 +3,7 @@
 #include "lexer/lexer.h"
 #include "utils/debug.h" 
 #include "parameters/parameters.h"
+#include "preprocessor/preprocessor.h"
 
 void setup_handler(struct ErrorHandler *handler) {
     handler->err     = err;
@@ -14,40 +15,17 @@ void setup_handler(struct ErrorHandler *handler) {
 }
 
 void compile(const char *filename, TargetList *includes, struct ErrorHandler handler) {
-    struct CoreData c_data;
+    struct FileData c_data;
     TokenStream stream;
-    c_data.t_stream = &stream;
+    Preprocessor pp;
 
-#ifdef BENCHMARK
-    struct ErrorHandler bench_handler = handler;
-    bench_handler.ferr = dummy_exit;
+    ts_init(&stream);
+    f_init(c_data);
 
-    for (int i = 0; i < 1000000; i++) {
-        ts_init(c_data.t_stream);
-        c_data.filename = filename;
-        c_data.file     = NULL;
-        c_data.length   = 0;
-        c_data.data     = NULL;
-
-        f_fill(&c_data, bench_handler.ferr);
-        lexerize(&c_data, bench_handler);
-
-        ts_free(c_data.t_stream);
-        f_free(&c_data);
-    }
-    return;
-#endif
-
-    ts_init(c_data.t_stream);
-    c_data.filename = filename;
-    c_data.file     = NULL;
-    c_data.length   = 0;
-    c_data.data     = NULL;
-
-    f_fill(&c_data, handler.ferr);
+    
     lexerize(&c_data, handler);
 
-    ts_free(c_data.t_stream);
+    ts_free(&stream);
     f_free(&c_data);
 }
 

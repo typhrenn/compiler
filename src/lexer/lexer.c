@@ -87,7 +87,7 @@ TokenType lookup_keyword(const char *text, size_t length) {
     return TOKEN_IDENTIFIER; 
 }
 
-void lexerize(struct CoreData *fileStruct, struct ErrorHandler handler) {
+void lexerize(struct FileData *fileStruct, struct ErrorHandler handler) {
     IncludeFrame frame = {
         .filename   = fileStruct->filename,
         .pos        = fileStruct->data,
