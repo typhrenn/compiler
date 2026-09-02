@@ -1,4 +1,4 @@
-#include "utils/string/string_list.h"
+#include "utils/dynamic/string_list.h"
 
 void sl_init(StringList *stream) {
     stream->list = NULL;
