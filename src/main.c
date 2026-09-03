@@ -1,11 +1,10 @@
 #include "utils/file.h"
 #include "error/error_handle.h"
-#include "lexer/lexer.h"
-#include "utils/debug.h" 
+#include "lexer/lexer.h" 
 #include "parameters/parameters.h"
 #include "preprocessor/preprocessor.h"
 
-void setup_handler(struct ErrorHandler *handler) {
+void setup_handler(ErrorHandler *handler) {
     handler->err     = err;
     handler->verr    = verbose_err;
     handler->ferr    = fatal_err;
@@ -14,23 +13,22 @@ void setup_handler(struct ErrorHandler *handler) {
     handler->note    = note_log;
 }
 
-void compile(const char *filename, TargetList *includes, struct ErrorHandler handler) {
-    struct FileData c_data;
+void compile(const char *filename, TargetList *includes, ErrorHandler handler) {
+    FileData c_data;
     TokenStream stream;
-    Preprocessor pp;
 
+    // initialization of token stream and file data
     ts_init(&stream);
     f_init(c_data);
 
-    
-    lexerize(&c_data, handler);
+    preprocess(c_data, &stream);
 
     ts_free(&stream);
     f_free(&c_data);
 }
 
 int main(int argc, char **argv) {
-    struct ErrorHandler handler;
+    ErrorHandler handler;
     CompileInfo info;
 
     chckargs(&info, argc, argv, fatal_err);
@@ -42,5 +40,4 @@ int main(int argc, char **argv) {
     }
 
     free_ci(&info);
-    return 0;
 }

@@ -1,13 +1,13 @@
 #include "utils/dynamic/buffer_list.h"
 #include "utils/file.h"
 
-void buflist_init(BufferList *list) {
+void bl_init(BufferList *list) {
     list->items = NULL;
     list->capacity = 0;
     list->count = 0;
 }
 
-void bl_fill(CBuffer *buffer, struct FileData *data, Error throw) {
+void bl_fill(CBuffer *buffer, FileData *data, Error throw) {
     buffer = malloc(sizeof(char) *  (data->length + 1));
     if (buffer == NULL) {
         throw("unable to allocate memory for data");
@@ -17,7 +17,7 @@ void bl_fill(CBuffer *buffer, struct FileData *data, Error throw) {
     buffer[data->length] = '\0';
 }
 
-void bl_push(BufferList *list, struct FileData *data, char *filename, Error ferr) {
+void bl_push(BufferList *list, FileData *data, char *filename, Error ferr) {
     if (list->count == list->capacity) {
         size_t new_capacity = list->capacity == 0 ? 16 : list->capacity * 2;
 

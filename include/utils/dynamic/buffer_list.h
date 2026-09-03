@@ -14,4 +14,8 @@ typedef struct {
     size_t capacity;
 } BufferList;
 
+void bl_init(BufferList *list);
+void bl_fill(CBuffer *buffer, FileData *data, Error throw);
+void bl_push(BufferList *list, FileData *data, char *filename, Error ferr);
+
 #endif

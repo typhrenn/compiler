@@ -20,8 +20,10 @@ typedef struct {
 
     TokenStream     *out;
 
-    struct ErrorHandler    handler;
-    bool            atal_err;
+    ErrorHandler    handler;
+    bool            fatal_err;
 } Preprocessor;
+
+void preprocess(FileData data, TokenStream *stream);
 
 #endif

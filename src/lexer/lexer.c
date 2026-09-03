@@ -1,20 +1,27 @@
 #include "lexer/lexer.h"
-#include "utils/debug.h"
 #include "lexer/token.h"
 
 TokenType lookup_keyword(const char *text, size_t length) {
     switch (text[0]) {
         case '#': {
             if (length == 3 && memcmp(text, "#if", 3) == 0) return PP_IF;
-            if (length == 5 && memcmp(text, "#elif", 5) == 0) return PP_ELIF;
-            if (length == 5 && memcmp(text, "#else", 5) == 0) return PP_ELSE;
-            if (length == 6 && memcmp(text, "#endif", 6) == 0) return PP_ENDIF;
-            if (length == 6 && memcmp(text, "#ifdef", 6) == 0) return PP_IFDEF;
-            if (length == 7 && memcmp(text, "#ifndef", 7) == 0) return PP_IFNDEF;
-            if (length == 8 && memcmp(text, "#elifdef", 8) == 0) return PP_ELIFDEF;
+            if (length == 5) {
+                if (memcmp(text, "#elif", 5) == 0) return PP_ELIF;
+                if (memcmp(text, "#else", 5) == 0) return PP_ELSE;
+            }
+            if (length == 6) {
+                if (memcmp(text, "#endif", 6) == 0) return PP_ENDIF;
+                if (memcmp(text, "#ifdef", 6) == 0) return PP_IFDEF;
+            }
+            if (length == 7) {
+                if (memcmp(text, "#ifndef", 7) == 0) return PP_IFNDEF;
+                if (memcmp(text, "#define", 7) == 0) return PP_DEFINE;
+            }
+            if (length == 8) {
+                if (memcmp(text, "#include", 8) == 0) return PP_INCLUDE;
+                if (memcmp(text, "#elifdef", 8) == 0) return PP_ELIFDEF;
+            }
             if (length == 9 && memcmp(text, "#elifndef", 9) == 0) return PP_ELIFNDEF;
-            if (length == 8 && memcmp(text, "#include", 8) == 0) return PP_INCLUDE;
-            if (length == 7 && memcmp(text, "#define", 7) == 0) return PP_DEFINE;
             break;
         }
         case 'b': {
@@ -87,300 +94,312 @@ TokenType lookup_keyword(const char *text, size_t length) {
     return TOKEN_IDENTIFIER; 
 }
 
-void lexerize(struct FileData *fileStruct, struct ErrorHandler handler) {
-    IncludeFrame frame = {
-        .filename   = fileStruct->filename,
-        .pos        = fileStruct->data,
-        .line_start = fileStruct->data,
-        .line       = 1
-    };
+void next_token(IncludeFrame *frame, ErrorHandler handler, bool *fatal_err, Token *token) {
+    bool leading_space = false;
+    while (isspace((unsigned char)*frame->pos) && *frame->pos != '\n') {
+        leading_space = true;
+        frame->pos++;
+    }
 
-    bool fatalErr = false;
+    if (*frame->pos == '\0') {
+        token->value = frame->pos;
+        token->length = 0;
+        token->type = TOKEN_EOF;
+        token->leading_whitespace = leading_space;
+        return;
+    }
 
-    int counter __attribute__((unused)) = 1;
+	// newline token for preprocessor
+    if (*frame->pos == '\n') {
+        token->value = frame->pos;
+        token->length = 1;
+        token->type = TOKEN_NEWLINE;
+        token->leading_whitespace = leading_space;
 
-    while (*frame.pos != '\0') {
-		// newline token for preprocessor
-		if (*frame.pos == '\n') {
-			frame.pos++;
-			frame.line++;
-			frame.line_start = frame.pos;
-			ts_push(fileStruct->t_stream, (Token){frame.pos, 1, TOKEN_NEWLINE}, handler.ferr);
-			continue;
-		}
+        frame->pos++;
+        frame->line++;
+        frame->line_start = frame->pos;
+        return;
+    }
 
-        // Check for white spaces
-        if (isspace((unsigned char)*frame.pos)) {
-            frame.pos++;
-            continue;
-        }
+	token->value = frame->pos;
+	token->leading_whitespace = leading_space;
+	int column = (int)(token->value - frame->line_start) + 1;
 
-        Token token;
-        token.value = frame.pos;
-		int column = (int)(token.value - frame.line_start) + 1;
+	// Identifiers and tokens
+    if (token_start(*frame->pos)) {
+		do {
+			frame->pos++;
+		} while (token_body(*frame->pos));
+		token->length = (int)(frame->pos - token->value);
 
-		// Identifiers and tokens
-        if (token_start(*frame.pos)) {
-			do {
-				frame.pos++;
-			} while (token_body(*frame.pos));
-			token.length = (int)(frame.pos - token.value);
-
-			token.type = lookup_keyword(token.value, token.length);
-		} else if (isdigit((unsigned char)*frame.pos)) {
-				while (isdigit((unsigned char)*frame.pos)) {
-					frame.pos++;
-				}
-				token.length = (int)(frame.pos - token.value);
-				token.type = TOKEN_NUMBER;
-			} else {
-            // Based upon C23 / ISO/IEC 9899:2024 standard
-			char c = *frame.pos++;
-			switch (c) {
-				case '(': token.type = TOKEN_LPAREN; break; // function call
-				case ')': token.type = TOKEN_RPAREN; break; 
-				case '{': token.type = TOKEN_LBRACE; break; // compound statements & aggregate initializers
-				case '}': token.type = TOKEN_RBRACE; break;
-				case '[': token.type = TOKEN_LBRACK; break; // array subscripting
-				case ']': token.type = TOKEN_RBRACK; break;
-				case ';': token.type = TOKEN_SEMICOLON; break; // statement terminator
-				case '.': token.type = TOKEN_DOT; break; // structure and union member access
-				case ',': token.type = TOKEN_COMMA; break;
-                case '~': token.type = TOKEN_TILDE; break; // bitwise NOT
-                
-                case '-': {
-                    if (*frame.pos == '>') {
-                        frame.pos++;
-                        token.type = TOKEN_ARROW; // structure and union member access through pointer
-                    } else if (*frame.pos == '=') {
-                        frame.pos++;
-                        token.type = TOKEN_MINUS_EQUAL; // Assignment by difference
-                    } else if (*frame.pos == '-') {
-                        frame.pos++;
-                        token.type = TOKEN_DECREMENT; // decrement
-                    } else {
-                        token.type = TOKEN_MINUS; // Subtraction or unary minus
-                    }
-
-                    break;
-                }
-
-                case '+': {
-                    if (*frame.pos == '=') {
-                        frame.pos++;
-                        token.type = TOKEN_PLUS_EQUAL; // Assignment by sum
-                    } else if (*frame.pos == '+') {
-                        frame.pos++;
-                        token.type = TOKEN_INCREMENT; // increment
-                    } else {
-                        token.type = TOKEN_PLUS; // Addition or unary plus
-                    }
-
-                    break;
-                }
-
-                case '!': {
-                    if (*frame.pos == '=') {
-                        frame.pos++;
-                        token.type = TOKEN_EXCL_EQUAL; // relational operator not equal to
-                    } else {
-                        token.type = TOKEN_EXCL; // logical NOT
-                    }
-
-                    break;
-                }
-
-                case '*': {
-                    if (*frame.pos == '=') {
-                        frame.pos++;
-                        token.type = TOKEN_ASTERISK_EQUAL; // Assignment by product
-                    } else {
-                        token.type = TOKEN_ASTERISK; // dereference and multiplication
-                    }
-
-                    break;
-                }
-
-                case '&': {
-                    if (*frame.pos == '&') {
-                        frame.pos++;
-                        token.type = TOKEN_AMPERS_AMPERS; // Logical AND
-                    } else if (*frame.pos == '=') {
-                        frame.pos++;
-                        token.type = TOKEN_AMPERS_EQUAL; // Assignment by bitwise AND
-                    } else {
-                        token.type = TOKEN_AMPERS; // Bitwise AND and adress-of
-                    }
-
-                    break;
-                }
-
-                case '/': {
-                    if (*frame.pos == '=') {
-                        frame.pos++;
-                        token.type = TOKEN_SLASH_EQUAL; // Assignment by quotient
-                    } else if (*frame.pos == '/') {
-                        while (*frame.pos != '\n' && *frame.pos != '\0') {
-                            frame.pos++;
-                        }
-						continue;
-                    } else {
-                        token.type = TOKEN_SLASH; // division
-                    }
-
-                    break;
-                }
-
-                case '%': {
-                    if (*frame.pos == '=') {
-                        frame.pos++;
-                        token.type = TOKEN_PERC_EQUAL; // Assignment by reminder
-                    } else {
-                        token.type = TOKEN_PERC; // reminder
-                    }
-
-                    break;
-                }
-
-                case '<': {
-                    if (*frame.pos == '<') {
-                        frame.pos++;
-                        if (*frame.pos == '=') {
-                            frame.pos++;
-                            token.type = TOKEN_LESS_LESS_EQUAL; // Assignment by bitwise left shift
-                        } else {
-                            token.type = TOKEN_LESS_LESS; // Bitwise left shift
-                        }
-                    } else if (*frame.pos == '=') {
-                        frame.pos++;
-                        token.type = TOKEN_LESS_EQUAL; // relational operator less or equal to
-                    } else {
-                        token.type = TOKEN_LESS; // relational operator less
-                    }
-
-                    break;
-                }
-
-                case '>': {
-                    if (*frame.pos == '>') {
-                        frame.pos++;
-                        if (*frame.pos == '=') {
-                            frame.pos++;
-                            token.type = TOKEN_MORE_MORE_EQUAL; // Assignment by bitwise right shift
-                        } else {
-                            token.type = TOKEN_MORE_MORE; // Bitwise right shift
-                        }
-                    } else if (*frame.pos == '=') {
-                        frame.pos++;
-                        token.type = TOKEN_MORE_EQUAL; // relational operator more or equal to
-                    } else {
-                        token.type = TOKEN_MORE; // relational operator more
-                    }
-
-                    break;
-                }
-
-                case '=': {
-                    if (*frame.pos == '=') {
-                        frame.pos++;
-                        token.type = TOKEN_EQUAL_EQUAL; // relational operator equal to
-                    } else {
-                        token.type = TOKEN_EQUAL; // Assignment operator
-                    }
-
-                    break;
-                }
-
-                case '^': {
-                    if (*frame.pos == '=') {
-                        frame.pos++;
-                        token.type = TOKEN_CARET_EQUAL; // Assignment by bitwise XOR
-                    } else {
-                        token.type = TOKEN_CARET; // Logical XOR
-                    }
-
-                    break;
-                }
-    
-                case '|': {
-                    if (*frame.pos == '=') {
-                        frame.pos++;
-                        token.type = TOKEN_PIPE_EQUAL; // Assignment by bitwise OR
-                    } else if (*frame.pos == '|') {
-                        frame.pos++;
-                        token.type = TOKEN_PIPE_PIPE; // Logical OR
-                    } else {
-                        token.type = TOKEN_PIPE; // Bitwise OR
-                    }
-
-                    break;
-                }
-
-                case '"': {
-                    const char *line_end = frame.line_start;
-					while (*line_end != '\n' && *line_end != '\0') {
-						line_end++;
-					}
-                    frame.pos++; 
-
-                    const char *start __attribute__((unused)) = frame.pos;
-
-                    while (*frame.pos != '"' && *frame.pos != '\0') {
-                        if (*frame.pos == '\\' && *(frame.pos + 1) != '\0') {
-                            frame.pos++;
-                        }
-                        frame.pos++;
-                    }
-
-                    if (*frame.pos == '"') {
-                        token.type = TOKEN_STRING_LITERAL;
-                        frame.pos++;
-                    } else {
-                        handler.verr(
-                            &frame,
-                            column,
-                            1,
-                            "string literal not properly terminated"
-                        );
-                    }
-
-                    break;
-                }
-
-				default: {
-					const char *line_end = frame.line_start;
-					while (*line_end != '\n' && *line_end != '\0') {
-						line_end++;
-					}
-
-                    handler.verr(
-						&frame,
-						column,
-						1,
-                        "Unexpected character: '%c'", c
-                    );
-                    fatalErr = true;
-                    break;
-				}
-
+		token->type = lookup_keyword(token->value, token->length);
+		return;
+	} else if (isdigit((unsigned char)*frame->pos)) {
+			while (isdigit((unsigned char)*frame->pos)) {
+				frame->pos++;
 			}
+			token->length = (int)(frame->pos - token->value);
+			token->type = TOKEN_NUMBER;
+			return;
+		} else {
+        // Based upon C23 / ISO/IEC 9899:2024 standard
+		char c = *frame->pos++;
+		switch (c) {
+			case '(': token->type = TOKEN_LPAREN; break; // function call
+			case ')': token->type = TOKEN_RPAREN; break; 
+			case '{': token->type = TOKEN_LBRACE; break; // compound statements & aggregate initializers
+			case '}': token->type = TOKEN_RBRACE; break;
+			case '[': token->type = TOKEN_LBRACK; break; // array subscripting
+			case ']': token->type = TOKEN_RBRACK; break;
+			case ';': token->type = TOKEN_SEMICOLON; break; // statement terminator
+			case '.': token->type = TOKEN_DOT; break; // structure and union member access
+			case ',': token->type = TOKEN_COMMA; break;
+            case '~': token->type = TOKEN_TILDE; break; // bitwise NOT
+            
+            case '-': {
+                if (*frame->pos == '>') {
+                    frame->pos++;
+                    token->type = TOKEN_ARROW; // structure and union member access through pointer
+                } else if (*frame->pos == '=') {
+                    frame->pos++;
+                    token->type = TOKEN_MINUS_EQUAL; // Assignment by difference
+                } else if (*frame->pos == '-') {
+                    frame->pos++;
+                    token->type = TOKEN_DECREMENT; // decrement
+                } else {
+                    token->type = TOKEN_MINUS; // Subtraction or unary minus
+                }
+
+                break;
+            }
+
+            case '+': {
+                if (*frame->pos == '=') {
+                    frame->pos++;
+                    token->type = TOKEN_PLUS_EQUAL; // Assignment by sum
+                } else if (*frame->pos == '+') {
+                    frame->pos++;
+                    token->type = TOKEN_INCREMENT; // increment
+                } else {
+                    token->type = TOKEN_PLUS; // Addition or unary plus
+                }
+
+                break;
+            }
+
+            case '!': {
+                if (*frame->pos == '=') {
+                    frame->pos++;
+                    token->type = TOKEN_EXCL_EQUAL; // relational operator not equal to
+                } else {
+                    token->type = TOKEN_EXCL; // logical NOT
+                }
+
+                break;
+            }
+
+            case '*': {
+                if (*frame->pos == '=') {
+                    frame->pos++;
+                    token->type = TOKEN_ASTERISK_EQUAL; // Assignment by product
+                } else {
+                    token->type = TOKEN_ASTERISK; // dereference and multiplication
+                }
+
+                break;
+            }
+
+            case '&': {
+                if (*frame->pos == '&') {
+                    frame->pos++;
+                    token->type = TOKEN_AMPERS_AMPERS; // Logical AND
+                } else if (*frame->pos == '=') {
+                    frame->pos++;
+                    token->type = TOKEN_AMPERS_EQUAL; // Assignment by bitwise AND
+                } else {
+                    token->type = TOKEN_AMPERS; // Bitwise AND and adress-of
+                }
+
+                break;
+            }
+
+            case '/': {
+                if (*frame->pos == '=') {
+                    frame->pos++;
+                    token->type = TOKEN_SLASH_EQUAL; // Assignment by quotient
+                } else if (*frame->pos == '/') {
+                    while (*frame->pos != '\n' && *frame->pos != '\0') {
+                        frame->pos++;
+                    }
+					next_token(frame, handler, fatal_err, token);
+					return;
+                } else {
+                    token->type = TOKEN_SLASH; // division
+                }
+
+                break;
+            }
+
+            case '%': {
+                if (*frame->pos == '=') {
+                    frame->pos++;
+                    token->type = TOKEN_PERC_EQUAL; // Assignment by reminder
+                } else {
+                    token->type = TOKEN_PERC; // reminder
+                }
+
+                break;
+            }
+
+            case '<': {
+                if (*frame->pos == '<') {
+                    frame->pos++;
+                    if (*frame->pos == '=') {
+                        frame->pos++;
+                        token->type = TOKEN_LESS_LESS_EQUAL; // Assignment by bitwise left shift
+                    } else {
+                        token->type = TOKEN_LESS_LESS; // Bitwise left shift
+                    }
+                } else if (*frame->pos == '=') {
+                    frame->pos++;
+                    token->type = TOKEN_LESS_EQUAL; // relational operator less or equal to
+                } else {
+                    token->type = TOKEN_LESS; // relational operator less
+                }
+
+                break;
+            }
+
+            case '>': {
+                if (*frame->pos == '>') {
+                    frame->pos++;
+                    if (*frame->pos == '=') {
+                        frame->pos++;
+                        token->type = TOKEN_MORE_MORE_EQUAL; // Assignment by bitwise right shift
+                    } else {
+                        token->type = TOKEN_MORE_MORE; // Bitwise right shift
+                    }
+                } else if (*frame->pos == '=') {
+                    frame->pos++;
+                    token->type = TOKEN_MORE_EQUAL; // relational operator more or equal to
+                } else {
+                    token->type = TOKEN_MORE; // relational operator more
+                }
+
+                break;
+            }
+
+            case '=': {
+                if (*frame->pos == '=') {
+                    frame->pos++;
+                    token->type = TOKEN_EQUAL_EQUAL; // relational operator equal to
+                } else {
+                    token->type = TOKEN_EQUAL; // Assignment operator
+                }
+
+                break;
+            }
+
+            case '^': {
+                if (*frame->pos == '=') {
+                    frame->pos++;
+                    token->type = TOKEN_CARET_EQUAL; // Assignment by bitwise XOR
+                } else {
+                    token->type = TOKEN_CARET; // Logical XOR
+                }
+
+                break;
+            }
+
+            case '|': {
+                if (*frame->pos == '=') {
+                    frame->pos++;
+                    token->type = TOKEN_PIPE_EQUAL; // Assignment by bitwise OR
+                } else if (*frame->pos == '|') {
+                    frame->pos++;
+                    token->type = TOKEN_PIPE_PIPE; // Logical OR
+                } else {
+                    token->type = TOKEN_PIPE; // Bitwise OR
+                }
+
+                break;
+            }
+
+            case '"': {
+                frame->pos++; 
+
+                const char *start __attribute__((unused)) = frame->pos;
+
+                while (*frame->pos != '"' && *frame->pos != '\0') {
+                    if (*frame->pos == '\\' && *(frame->pos + 1) != '\0') {
+                        frame->pos++;
+                    }
+                    frame->pos++;
+                }
+
+                if (*frame->pos == '"') {
+                    token->type = TOKEN_STRING_LITERAL;
+                    frame->pos++;
+                } else {
+                    handler.verr(
+                        frame,
+                        column,
+                        1,
+                        "string literal not properly terminated"
+                    );
+                }
+
+                break;
+            }
+
+			default: {
+                handler.verr(
+					frame,
+					column,
+					1,
+                    "Unexpected character: '%c'", c
+                );
+                *fatal_err = true;
+                break;
+			}
+
 		}
+	}
 
-        token.length = (int)(frame.pos - token.value);
-
-        #ifdef DEBUG
-        printf("Token %d (Line %d, Col %d):\t%.*s\n", 
-               counter, frame.line, column, (int)token.length, token.value
-		);
-        counter++;
-        #endif
-
-        ts_push(fileStruct->t_stream, (Token){token.value, token.length, token.type}, handler.ferr);
-    }
-
-    ts_push(fileStruct->t_stream, (Token){frame.pos, 0, TOKEN_EOF}, handler.ferr);
-
-    if (fatalErr) {
-        handler.fatal(EXIT_FAILURE);
-    }
+    token->length = (int)(frame->pos - token->value);
 }
+
+// redundant, as of now filestruct no longer possesses the pointer to the actual file data, thus this code is deprecated
+// void lexerize(FileData *fileStruct, ErrorHandler handler) {
+//     IncludeFrame frame = {
+//         .filename   = fileStruct->filename,
+//         .pos        = fileStruct->data,
+//         .line_start = fileStruct->data,
+//         .line       = 1
+//     };
+
+//     bool fatalErr = false;
+
+//     int counter __attribute__((unused)) = 1;
+
+//     while (1) {
+//         Token token;
+//         next_token(&frame, handler, &fatalErr, &token);
+
+//         #ifdef DEBUG
+//         printf("Token %d (Line %d, Col %d):\t%.*s\n", 
+//                counter, frame.line, 0, (int)token.length, token.value
+// 		);
+//         counter++;
+//         #endif
+
+//         ts_push(fileStruct->t_stream, token, handler.ferr);
+
+//         if (token.type == TOKEN_EOF) break;
+//     }
+
+//     if (fatalErr) {
+//         handler.fatal(EXIT_FAILURE);
+//     }
+// }
