@@ -20,7 +20,7 @@ typedef struct {
 
     TokenStream     *out;
 
-    ErrorHandler    handler;
+    ErrorHandler    *handler;
     bool            fatal_err;
 } Preprocessor;
 

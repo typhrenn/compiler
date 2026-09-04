@@ -2,12 +2,12 @@
 #define UTILS_H
 
 typedef struct {
-    const char *string;
-    int len;
+    const char *value;
+    int length;
 } String;
 
-static inline String strcnstr(const char *string, int len) {
-    return (String){string, len};
+static inline String strcnstr(const char *value, int len) {
+    return (String){value, len};
 }
 
 typedef struct IncludeFrame {

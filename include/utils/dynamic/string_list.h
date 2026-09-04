@@ -3,11 +3,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "error/error_handle.h"
+#include "lexer/token.h"
+#include "utils/utils.h"
 
 typedef struct {
-	char **list;
+	String *list;
 
 	size_t count;
 	size_t capacity;
